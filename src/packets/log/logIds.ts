@@ -53,5 +53,6 @@ export const enum logId {
   NewTrap = 53,
   SkillCancelNotify = 54,
 
+  SkillCooldownNotify = 101,
   APP_StatApi = 60000,
 }

@@ -1,6 +1,12 @@
 import { TypedEmitter } from 'tiny-typed-emitter';
 import { Decompressor } from './decompressor.js';
 
+type PKTSkillCooldownNotify = {
+    skillId: number;
+    cooldown1: number;
+    cooldown2: number;
+};
+
 type AbilityData = {
     points: number;
     level: number;
@@ -935,6 +941,7 @@ type PKTZoneStatusEffectRemoveNotify = {
 };
 
 interface PKTStreamEvents {
+    PKTSkillCooldownNotify: (pkt: PKT<PKTSkillCooldownNotify>) => void;
     PKTAbilityChangeNotify: (pkt: PKT<PKTAbilityChangeNotify>) => void;
     PKTActiveAbilityNotify: (pkt: PKT<PKTActiveAbilityNotify>) => void;
     PKTAddonSkillFeatureChangeNotify: (pkt: PKT<PKTAddonSkillFeatureChangeNotify>) => void;
@@ -995,6 +1002,7 @@ interface PKTStreamEvents {
 
 declare class PKTStream extends TypedEmitter<PKTStreamEvents> {
     #private;
+    ignored: number[];
     constructor(decompressor: Decompressor);
     /**
      * @returns `false` if packet is malformed

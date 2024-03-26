@@ -1,3 +1,4 @@
+export { read as SkillCooldownNotify } from "./definitions/SkillCooldownNotify";
 export { read as AbilityChangeNotify } from "./definitions/AbilityChangeNotify";
 export { read as ActiveAbilityNotify } from "./definitions/ActiveAbilityNotify";
 export { read as AddonSkillFeatureChangeNotify } from "./definitions/AddonSkillFeatureChangeNotify";

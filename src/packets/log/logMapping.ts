@@ -7,6 +7,7 @@ export const logMapping = new Map<
   number,
   [string, (reader: Read, version: number) => any, (writer: Write, data: any) => any]
 >([
+  [logId.SkillCooldownNotify, [names.SkillCooldownNotify, reads.SkillCooldownNotify, writes.SkillCooldownNotify]],
   [logId.AbilityChangeNotify, [names.AbilityChangeNotify, reads.AbilityChangeNotify, writes.AbilityChangeNotify]],
   [logId.ActiveAbilityNotify, [names.ActiveAbilityNotify, reads.ActiveAbilityNotify, writes.ActiveAbilityNotify]],
   [
