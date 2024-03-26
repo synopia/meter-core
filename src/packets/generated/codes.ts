@@ -1,4 +1,5 @@
 // Auto Generated, do not edit.
+export { opcode as PKTSkillCooldownNotify} from "./definitions/PKTSkillCooldownNotify";
 export { opcode as PKTAbilityChangeNotify } from "./definitions/PKTAbilityChangeNotify";
 export { opcode as PKTActiveAbilityNotify } from "./definitions/PKTActiveAbilityNotify";
 export { opcode as PKTAddonSkillFeatureChangeNotify } from "./definitions/PKTAddonSkillFeatureChangeNotify";

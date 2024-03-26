@@ -1,4 +1,5 @@
 // Auto Generated, do not edit.
+export type { PKTSkillCooldownNotify } from "./definitions/PKTSkillCooldownNotify";
 export type { PKTAbilityChangeNotify } from "./definitions/PKTAbilityChangeNotify";
 export type { PKTActiveAbilityNotify } from "./definitions/PKTActiveAbilityNotify";
 export type { PKTAddonSkillFeatureChangeNotify } from "./definitions/PKTAddonSkillFeatureChangeNotify";

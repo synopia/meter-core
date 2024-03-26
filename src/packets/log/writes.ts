@@ -1,3 +1,4 @@
+export { write as SkillCooldownNotify } from "./definitions/SkillCooldownNotify";
 export { write as AbilityChangeNotify } from "./definitions/AbilityChangeNotify";
 export { write as ActiveAbilityNotify } from "./definitions/ActiveAbilityNotify";
 export { write as AddonSkillFeatureChangeNotify } from "./definitions/AddonSkillFeatureChangeNotify";

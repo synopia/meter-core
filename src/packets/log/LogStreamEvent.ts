@@ -1,6 +1,8 @@
 import type { LogEvent } from "../../logger/logEvent";
 import type * as types from "./types";
+
 export interface LogStreamEvent {
+  SkillCooldownNotify: (pkt: LogEvent<types.SkillCooldownNotify>) => void;
   AbilityChangeNotify: (pkt: LogEvent<types.AbilityChangeNotify>) => void;
   ActiveAbilityNotify: (pkt: LogEvent<types.ActiveAbilityNotify>) => void;
   AddonSkillFeatureChangeNotify: (pkt: LogEvent<types.AddonSkillFeatureChangeNotify>) => void;

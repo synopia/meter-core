@@ -1,3 +1,4 @@
+export type { SkillCooldownNotify } from "./definitions/SkillCooldownNotify";
 export type { AbilityChangeNotify } from "./definitions/AbilityChangeNotify";
 export type { ActiveAbilityNotify } from "./definitions/ActiveAbilityNotify";
 export type { AddonSkillFeatureChangeNotify } from "./definitions/AddonSkillFeatureChangeNotify";
