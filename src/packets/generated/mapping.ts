@@ -3,6 +3,7 @@ import * as codes from "./codes";
 import * as names from "./names";
 import * as reads from "./reads";
 export const mapping = new Map<number, [string, (buf: Buffer) => any]>([
+  [codes.PKTSkillCooldownNotify, [names.PKTSkillCooldownNotify, reads.PKTSkillCooldownNotify]],
   [codes.PKTAbilityChangeNotify, [names.PKTAbilityChangeNotify, reads.PKTAbilityChangeNotify]],
   [codes.PKTActiveAbilityNotify, [names.PKTActiveAbilityNotify, reads.PKTActiveAbilityNotify]],
   [

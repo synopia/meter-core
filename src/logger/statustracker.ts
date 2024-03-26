@@ -45,7 +45,7 @@ export interface StatusEffect {
   showType: StatusEffectShowType;
   effectType: StatusEffectType;
   expirationDelay: number;
-  expirationTimer: NodeJS.Timer | undefined;
+  expirationTimer: NodeJS.Timeout | undefined;
   expireAt: Date | undefined;
   occurTime: Date;
   timestamp: bigint;

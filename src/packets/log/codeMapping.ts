@@ -1,6 +1,7 @@
 import * as codes from "../generated/codes";
 import { logId } from "./logIds";
 export const codeMapping = new Map<number, [number]>([
+  [codes.PKTSkillCooldownNotify, [logId.SkillCooldownNotify]],
   [codes.PKTAbilityChangeNotify, [logId.AbilityChangeNotify]],
   [codes.PKTActiveAbilityNotify, [logId.ActiveAbilityNotify]],
   [codes.PKTAddonSkillFeatureChangeNotify, [logId.AddonSkillFeatureChangeNotify]],

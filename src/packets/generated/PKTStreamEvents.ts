@@ -1,7 +1,9 @@
 // Auto Generated, do not edit.
 import type { PKT } from "../../pkt-stream";
 import type * as types from "./types";
+import { PKTSkillCooldownNotify } from "./reads";
 export interface PKTStreamEvents {
+  PKTSkillCooldownNotify: (pkt: PKT<types.PKTSkillCooldownNotify>) => void;
   PKTAbilityChangeNotify: (pkt: PKT<types.PKTAbilityChangeNotify>) => void;
   PKTActiveAbilityNotify: (pkt: PKT<types.PKTActiveAbilityNotify>) => void;
   PKTAddonSkillFeatureChangeNotify: (pkt: PKT<types.PKTAddonSkillFeatureChangeNotify>) => void;
