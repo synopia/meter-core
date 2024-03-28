@@ -12,7 +12,7 @@
   },
   "scripts": {
     "format": "prettier --write \"**/*.{js,json,ts}\"",
-    "build": "tsc --noEmit && tsup --minify",
+    "build": "tsc --noEmit && tsup ",
     "build:debug": "tsc --noEmit && tsup",
     "build:test": "tsup src/test.ts src/logger/logger.ts --clean --no-config --sourcemap",
     "test": "tsc --noEmit && tsup src/test.ts --clean --no-config --sourcemap && node ./dist/test.js"
