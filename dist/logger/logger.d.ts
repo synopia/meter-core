@@ -1,6 +1,6 @@
 import { TypedEmitter } from 'tiny-typed-emitter';
 import { Decompressor } from '../decompressor.js';
-import { L as LostArkDateTime, V as Vector3F, A as Angle, T as TripodIndex, a as TripodLevel, S as SkillMoveOptionData, b as SkillOptionData, P as PKTStream } from '../pkt-stream-eed9bcbd.js';
+import { L as LostArkDateTime, V as Vector3F, A as Angle, T as TripodIndex, a as TripodLevel, S as SkillMoveOptionData, b as SkillOptionData, P as PKTStream } from '../pkt-stream-d6924b19.js';
 import { a as GameState } from '../data-765165e9.js';
 import 'oodle';
 
@@ -67,6 +67,12 @@ declare class Write {
         lenType: "u8" | "u16" | "u32";
     }, callbackfn: (...args: any[]) => any): void;
 }
+
+type SkillCooldownNotify = {
+    skillId: number;
+    cooldown1: number;
+    cooldown2: number;
+};
 
 type AbilityDataLog = {
     points: number;
@@ -608,6 +614,7 @@ declare class LogEvent<T> {
 }
 
 interface LogStreamEvent {
+    SkillCooldownNotify: (pkt: LogEvent<SkillCooldownNotify>) => void;
     AbilityChangeNotify: (pkt: LogEvent<AbilityChangeNotify>) => void;
     ActiveAbilityNotify: (pkt: LogEvent<ActiveAbilityNotify>) => void;
     AddonSkillFeatureChangeNotify: (pkt: LogEvent<AddonSkillFeatureChangeNotify>) => void;
