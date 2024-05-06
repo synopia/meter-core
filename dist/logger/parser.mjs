@@ -1,1 +1,2220 @@
-import{a as lt,b as ct}from"../chunk-7OP6AIOR.mjs";import"../chunk-ANZKOZEE.mjs";import{a as ft,b as dt,c as Y,e as ut}from"../chunk-H4U4LEYC.mjs";import{a as x,b as et,g as at,h as st,i as G,j as Q}from"../chunk-IBNRZ227.mjs";import"../chunk-ZGEJ7KGT.mjs";import"../chunk-AWBGKN6N.mjs";import{a as H,b as R,c as Z,d as $}from"../chunk-K7C7TUE5.mjs";import{TypedEmitter as Pt}from"tiny-typed-emitter";import{TypedEmitter as kt}from"tiny-typed-emitter";import{createHash as St}from"crypto";import Et from"axios";var B,N,F,rt=class{constructor(a,r,i){Z(this,B,void 0);Z(this,N,void 0);Z(this,F,void 0);H(this,"ip");H(this,"zoneSyncStatus",0);H(this,"cache",new Map);i&&$(this,B,i),$(this,N,a),$(this,F,r)}syncData(){let a=[];R(this,N).entities.forEach(r=>{r.entityType===1&&a.push(r)}),this.getPlayersData(a)}getPlayersData(a,r=0){if(r>24){a.forEach(s=>{let e=this.cache.get(s.name);e&&e.status===1?e.status=0:e||this.cache.set(s.name,{hash:"",status:0,info:{name:s.name,stats:[],elixirs:[],gems:[]}})});return}if(!this.isCurrentZoneValid()){a.forEach(s=>{let e=this.cache.get(s.name);e&&e.status===1&&this.cache.delete(s.name)});return}if(!R(this,B)||!this.ip)return;let i={};a.forEach(s=>{let e=this.getHash(s),t=this.cache.get(s.name);if(!e){t&&t.status===1&&this.cache.delete(s.name);return}t&&(t.status===0||r===0&&t.status===1||t.status===2&&t.hash===e)||(t?(t.hash=e,t.status=1):t={hash:e,status:1,info:{name:s.name,stats:[],elixirs:[],gems:[]}},this.cache.set(s.name,t),i[s.name]=e)}),Object.keys(i).length!==0&&Et.get(`${rt.baseUrl}/req2`,{params:{ip:this.ip,ci:R(this,F),...i}}).then(s=>{if(s.status===200&&R(this,B))try{let e=s.data,t=dt.get(6e4);if(t){let[o,c,l]=t,y={players:e};if(a=a.filter(k=>!e.find(g=>g.name===k.name)),a.length>0&&setTimeout(()=>{a=a.map(k=>R(this,N).getEntityByName(k.name)).filter(k=>k!==void 0&&k.entityType===1),this.getPlayersData(a,r+1)},1e4),y.players.length>0){let k=new Y(y,6e4,l);R(this,B).emit(o,k),R(this,B).emit("*",o,k),R(this,B).appendLog(k)}}}catch{setTimeout(()=>{a=a.map(t=>R(this,N).getEntityByName(t.name)).filter(t=>t!==void 0&&t.entityType===1),this.getPlayersData(a,r+5)},1e4)}}).catch(s=>{setTimeout(()=>{a=a.map(e=>R(this,N).getEntityByName(e.name)).filter(e=>e!==void 0&&e.entityType===1),this.getPlayersData(a,r+5)},1e4)})}getHash(a){if(!a.items.equipList||a.characterId===0n||!a.class||a.name==="You")return;let r=new Array(32).fill(0);a.items.equipList?.forEach(s=>{r[s.slot]=s.id});let i=`${a.name}${a.class}${a.characterId}${r.join("")}`;return St("md5").update(i).digest("hex")}updatePlayerStats(a){a.forEach(r=>{let i=this.cache.get(r.name);i?(i.info=r,i.status=2):this.cache.set(r.name,{hash:"",status:2,info:r})})}getStats(a){if(!this.isCurrentZoneValid())return;let r=this.cache.get(a);if(r&&r.status===2)return r.info.stats}isCurrentZoneValid(){return this.zoneSyncStatus!==0&&(this.zoneSyncStatus&10)===0}},V=rt;B=new WeakMap,N=new WeakMap,F=new WeakMap,H(V,"baseUrl","https://la.herysia.com");var Dt={isLive:!0,dontResetOnZoneChange:!1,resetAfterPhaseTransition:!1,splitOnPhaseTransition:!1},J=class extends kt{#t;encounters;#i;#o;#r;#a;options;resetTimer;phaseTransitionResetRequest;phaseTransitionResetRequestTime;#e;constructor(a,r,i,s,e){super(),this.#i=a,this.#o=r,this.#r=i,this.#a=s,this.options={...Dt,...e},this.resetTimer=null,this.phaseTransitionResetRequest=!1,this.phaseTransitionResetRequestTime=0,this.#e=new Map,this.encounters=[],this.#t={startedOn:0,lastCombatPacket:0,fightStartedOn:0,localPlayer:this.#i.localPlayer.name,currentBoss:void 0,killState:0,zoneLevel:Q[0],entities:new Map,damageStatistics:{totalDamageDealt:0,topDamageDealt:0,totalDamageTaken:0,topDamageTaken:0,totalHealingDone:0,topHealingDone:0,totalShieldDone:0,topShieldDone:0,debuffs:new Map,buffs:new Map,topShieldGotten:0,totalEffectiveShieldingDone:0,topEffectiveShieldingDone:0,topEffectiveShieldingUsed:0,effectiveShieldingBuffs:new Map,appliedShieldingBuffs:new Map}}}onCounterAttack(a,r){let i=this.updateEntity(a,{},r);i.hits.counter+=1}onInitEnv(a,r){this.options.isLive?(this.#t.entities.forEach((i,s,e)=>{i.hits.total===0&&e.delete(s)}),this.options.dontResetOnZoneChange===!1&&this.resetTimer===null&&(this.resetTimer=setTimeout(()=>{this.resetState(+r+6e3)},6e3),this.emit("message","new-zone"))):(this.splitEncounter(r),this.emit("message","new-zone"))}splitEncounter(a){if(this.#t.fightStartedOn!==0&&(this.#t.damageStatistics.totalDamageDealt!==0||this.#t.damageStatistics.totalDamageTaken!==0)){let r=structuredClone(this.#t);r.entities.forEach(i=>{i.isPlayer&&(i.statApiValid=this.#r.isCurrentZoneValid()&&this.#r.cache.get(i.name)?.status===2)}),r.localPlayer=this.#i.localPlayer.name,this.applyBreakdowns(r.entities),this.encounters.push(r)}this.resetState(+a)}getBossIfStillExist(){if(this.#t.currentBoss?.id){let a=BigInt(`0x0${this.#t.currentBoss?.id}`);return this.#i.entities.has(a)?this.#t.currentBoss:void 0}}resetState(a){this.cancelReset(),this.resetBreakdowns(),this.#t={startedOn:+a,lastCombatPacket:+a,fightStartedOn:0,localPlayer:this.#i.localPlayer.name,currentBoss:this.getBossIfStillExist(),entities:new Map,killState:0,zoneLevel:this.#t.zoneLevel,damageStatistics:{totalDamageDealt:0,topDamageDealt:0,totalDamageTaken:0,topDamageTaken:0,totalHealingDone:0,topHealingDone:0,totalShieldDone:0,topShieldDone:0,debuffs:new Map,buffs:new Map,appliedShieldingBuffs:new Map,effectiveShieldingBuffs:new Map,topEffectiveShieldingDone:0,topEffectiveShieldingUsed:0,topShieldGotten:0,totalEffectiveShieldingDone:0}},this.emit("reset-state",this.#t)}cancelReset(){this.resetTimer&&clearTimeout(this.resetTimer),this.resetTimer=null}onPhaseTransition(a,r){this.options.isLive&&(this.emit("message",`phase-transition-${a}`),this.options.resetAfterPhaseTransition&&(this.phaseTransitionResetRequest=!0,this.phaseTransitionResetRequestTime=+r)),!this.options.isLive&&this.options.splitOnPhaseTransition&&this.splitEncounter(r)}updateOptions(a){this.options={...this.options,...a}}onDeath(a,r){let i=this.#t.entities.get(a.name),s=0;i?i.isDead?s=i.deaths:s=i.deaths+1:s=1,this.updateEntity(a,{isDead:!0,deathTime:+r,deaths:s},r)}onDamage(a,r,i,s,e,t){if((s.modifier&15)===11&&s.skillId===0&&s.skillEffectId===0)return;this.phaseTransitionResetRequest&&this.phaseTransitionResetRequestTime>0&&this.phaseTransitionResetRequestTime<+t-8e3&&(this.resetState(+t),this.phaseTransitionResetRequest=!1);let[o,c]=this.#o.getStatusEffects(a,i,this.#i.localPlayer.characterId,t);if(this.#a.isBattleItem(s.skillEffectId,"attack")&&r&&r.entityType===5){let P=r;s.skillEffectId=P.skillEffectId}let l=this.updateEntity(a,{},t),y=this.updateEntity(i,{currentHp:s.targetCurHp,maxHp:s.targetMaxHp},t);if(!l||!y)return;!y.isPlayer&&s.targetCurHp<0&&(s.damage=s.damage+s.targetCurHp);let k=s.skillId;s.skillId===0&&s.skillEffectId!==0&&(k=s.skillEffectId);let g=l.skills.get(k);g||(g={...this.createEntitySkill(),id:k,...this.getSkillNameIcon(s.skillId,s.skillEffectId)},l.skills.set(k,g));let q=s.modifier&15,w=(s.modifier>>4&7)-1,_=(q&9)!==0,C=new Set,b=new Set;o.forEach(([P])=>{C.add(P)}),c.forEach(([P])=>{b.add(P)}),g.damageInfo.damageDealt+=s.damage,s.damage>g.maxDamage&&(g.maxDamage=s.damage),l.hits.total+=1,g.hits.total+=1,l.damageInfo.damageDealt+=s.damage,y.damageTaken+=s.damage;let z=_?1:0;l.hits.crit+=z,g.hits.crit+=z;let U=!1,K=!1,W=this.#a.getSkillEffectDirectionalMask(s.skillEffectId)-1;if(W===0||W===2){K=w===0;let P=K?1:0;l.hits.backAttack+=P,l.hits.totalBackAttack+=1,g.hits.backAttack+=P,g.hits.totalBackAttack+=1}if(W===1||W===2){U=w===1;let P=U?1:0;l.hits.frontAttack+=P,l.hits.totalFrontAttack+=1,g.hits.frontAttack+=P,g.hits.totalFrontAttack+=1}if(l.isPlayer){this.#t.damageStatistics.totalDamageDealt+=s.damage,this.#t.damageStatistics.topDamageDealt=Math.max(this.#t.damageStatistics.topDamageDealt,l.damageInfo.damageDealt);let P=!1,L=!1;C.forEach(n=>{if(!this.#t.damageStatistics.buffs.has(n)){let S=this.#a.getStatusEffectHeaderData(n);S&&this.#t.damageStatistics.buffs.set(n,S)}let D=this.#t.damageStatistics.buffs.get(n);D&&!P&&(P=(D.buffcategory==="classskill"||D.buffcategory==="identity"||D.buffcategory==="ability")&&D.source.skill!==void 0&&D.target===1&&this.#a.isSupportClassId(D.source.skill.classid));let T=g.damageDealtBuffedBy.get(n)??0;g.damageDealtBuffedBy.set(n,T+s.damage);let M=l.damageDealtBuffedBy.get(n)??0;l.damageDealtBuffedBy.set(n,M+s.damage);let j=l.hits.hitsBuffedBy.get(n)??0;l.hits.hitsBuffedBy.set(n,j+1);let E=g.hits.hitsBuffedBy.get(n)??0;g.hits.hitsBuffedBy.set(n,E+1)}),b.forEach(n=>{if(!this.#t.damageStatistics.debuffs.has(n)){let S=this.#a.getStatusEffectHeaderData(n);S&&this.#t.damageStatistics.debuffs.set(n,S)}let D=this.#t.damageStatistics.debuffs.get(n);D&&!L&&(L=(D.buffcategory==="classskill"||D.buffcategory==="identity"||D.buffcategory==="ability")&&D.source.skill!==void 0&&D.target===1&&this.#a.isSupportClassId(D.source.skill.classid));let T=g.damageDealtDebuffedBy.get(n)??0;g.damageDealtDebuffedBy.set(n,T+s.damage);let M=l.damageDealtDebuffedBy.get(n)??0;l.damageDealtDebuffedBy.set(n,M+s.damage);let j=l.hits.hitsDebuffedBy.get(n)??0;l.hits.hitsDebuffedBy.set(n,j+1);let E=g.hits.hitsDebuffedBy.get(n)??0;g.hits.hitsDebuffedBy.set(n,E+1)});let nt=L?1:0,ot=P?1:0;if(g.damageInfo.damageDealtBuffedBySupport+=P?s.damage:0,g.damageInfo.damageDealtDebuffedBySupport+=L?s.damage:0,l.damageInfo.damageDealtBuffedBySupport+=P?s.damage:0,l.damageInfo.damageDealtDebuffedBySupport+=L?s.damage:0,l.hits.hitsBuffedBySupport+=ot,l.hits.hitsDebuffedBySupport+=nt,g.hits.hitsBuffedBySupport+=ot,g.hits.hitsDebuffedBySupport+=nt,s.damage>0&&l.isPlayer){let n={multDmg:{sumRate:0,totalRate:1,values:Array()},atkPowSubRate2:{selfSumRate:0,sumRate:0,values:Array()},atkPowSubRate1:{sumRate:0,totalRate:1,values:Array()},skillDamRate:{selfSumRate:0,sumRate:0,values:Array()},atkPowAmplify:{values:Array()},crit:{selfSumRate:0,sumRate:0,values:Array()},critDmgRate:2};if(o.forEach(([E,S,I])=>{let m=this.#i.entities.get(S);if(!m)return;let f=this.getBuffAfterTripods(this.#a.skillBuff.get(E),m,s);if(f){if(f.type==="skill_damage_amplify"&&f.statuseffectvalues&&m.entityType===1&&S!==a.entityId){let u=f.statuseffectvalues[0]??0,d=f.statuseffectvalues[4]??0;if((u===0||u===s.skillId)&&(d===0||d===s.skillEffectId)){let h=f.statuseffectvalues[1]??0;if(h!==0){let p=h/1e4*I;n.multDmg.values.push({casterEntity:m,rate:p}),n.multDmg.sumRate+=p,n.multDmg.totalRate*=1+p}}}else if(f.type==="attack_power_amplify"&&f.statuseffectvalues&&m.entityType===1&&S!==a.entityId){let u=f.statuseffectvalues[0]??0;if(u!==0){let d=u/1e4*I,h=this.#r.getStats(m.name)?.find(v=>v.id===4)?.value,p=this.#r.getStats(a.name)?.find(v=>v.id===4)?.value;h&&p&&(d*=h/p),n.atkPowAmplify.values.push({casterEntity:m,rate:d})}}f.passiveoption.forEach(u=>{if(x[u.type]===2){if(u.keystat==="attack_power_sub_rate_2"){let d=u.value;if(d!==0){let h=d/1e4*I;m.entityType===1&&S!==a.entityId?(n.atkPowSubRate2.values.push({casterEntity:m,rate:h}),n.atkPowSubRate2.sumRate+=h):n.atkPowSubRate2.selfSumRate+=h}}else if(u.keystat==="attack_power_sub_rate_1"){let d=u.value;if(d!==0){let h=d/1e4*I;m.entityType===1&&S!==a.entityId&&(n.atkPowSubRate1.values.push({casterEntity:m,rate:h}),n.atkPowSubRate1.sumRate+=h,n.atkPowSubRate1.totalRate*=1+h)}}else if(u.keystat==="skill_damage_rate"){let d=u.value;if(d!==0){let h=d/1e4*I;m.entityType===1&&S!==a.entityId?(n.skillDamRate.values.push({casterEntity:m,rate:h}),n.skillDamRate.sumRate+=h):n.skillDamRate.selfSumRate+=h}}}if(u.keystat==="critical_hit_rate"){let d=u.value;if(d!==0){let h=d/1e4*I;m.entityType===1&&S!==a.entityId?(n.crit.values.push({casterEntity:m,rate:h}),n.crit.sumRate+=h):n.crit.selfSumRate+=h}}if(m.entityType===1&&S!==a.entityId)if(u.keystat==="skill_damage_sub_rate_2"){let d=u.value;if(d!==0){let h=d/1e4*I,p=this.#r.getStats(m.name)?.find(v=>v.id===1)?.value??0;switch(m.class){case 204:h*=1+p/.0699*.35/1e4;break;case 105:h*=1+p/.0699*.63/1e4;break;case 602:h*=1+p/.0699*.38/1e4;break;default:break}n.multDmg.values.push({casterEntity:m,rate:h}),n.multDmg.sumRate+=h,n.multDmg.totalRate*=1+h}}else u.keystat==="critical_dam_rate"&&f.category==="buff"&&(n.critDmgRate+=u.value/1e4*I);else if(x[u.type]===4){let d=this.#a.combatEffect.get(u.keyindex);n.critDmgRate+=I*this.getCritMultiplierFromCombatEffect(d,{self:a,target:i,caster:m,skill:this.#a.skill.get(k),hitOption:w,targetCount:e})}})}}),c.forEach(([E,S,I])=>{let m=this.#i.entities.get(S);if(!m)return;let f=this.getBuffAfterTripods(this.#a.skillBuff.get(E),m,s);if(f){if(f.type==="instant_stat_amplify"&&f.statuseffectvalues){let u=f.statuseffectvalues[0]??0;if(u!==0){let d=u/1e4*I;m.entityType===1&&S!==a.entityId?(n.crit.values.push({casterEntity:m,rate:d}),n.crit.sumRate+=d):n.crit.selfSumRate+=d}}if(!(m.entityType!==1||S===a.entityId)){if(f.type==="instant_stat_amplify"&&f.statuseffectvalues){let u=f.statuseffectvalues[0]??0;if(s.damageType===0){let d=f.statuseffectvalues[2]??0;if(d!==0){let p=-(d/1e4)*I*.5;n.multDmg.values.push({casterEntity:m,rate:p}),n.multDmg.sumRate+=p,n.multDmg.totalRate*=1+p}let h=f.statuseffectvalues[7]??0;if(h!==0){let p=h/1e4*I;n.multDmg.values.push({casterEntity:m,rate:p}),n.multDmg.sumRate+=p,n.multDmg.totalRate*=1+p}if(_){let p=f.statuseffectvalues[9]??0;if(p!==0){let v=p/1e4*I;n.multDmg.values.push({casterEntity:m,rate:v}),n.multDmg.sumRate+=v,n.multDmg.totalRate*=1+v}}}else if(s.damageType===1){let d=f.statuseffectvalues[3]??0;if(d!==0){let p=-(d/1e4)*I*.5;n.multDmg.values.push({casterEntity:m,rate:p}),n.multDmg.sumRate+=p,n.multDmg.totalRate*=1+p}let h=f.statuseffectvalues[8]??0;if(h!==0){let p=h/1e4*I;n.multDmg.values.push({casterEntity:m,rate:p}),n.multDmg.sumRate+=p,n.multDmg.totalRate*=1+p}if(_){let p=f.statuseffectvalues[10]??0;if(p!==0){let v=p/1e4*I;n.multDmg.values.push({casterEntity:m,rate:v}),n.multDmg.sumRate+=v,n.multDmg.totalRate*=1+v}}}}if(f.type==="skill_damage_amplify"&&f.statuseffectvalues){let u=f.statuseffectvalues[0]??0,d=f.statuseffectvalues[4]??0;if((u===0||u===s.skillId)&&(d===0||d===s.skillEffectId)){let h=f.statuseffectvalues[1]??0;if(h!==0){let p=h/1e4*I;n.multDmg.values.push({casterEntity:m,rate:p}),n.multDmg.sumRate+=p,n.multDmg.totalRate*=1+p}}}if(f.type==="directional_attack_amplify"&&f.statuseffectvalues){if(U){let u=f.statuseffectvalues[0]??0;if(u!==0){let d=u/100*I;n.multDmg.values.push({casterEntity:m,rate:d}),n.multDmg.sumRate+=d,n.multDmg.totalRate*=1+d}}if(K){let u=f.statuseffectvalues[4]??0;if(u!==0){let d=u/100*I;n.multDmg.values.push({casterEntity:m,rate:d}),n.multDmg.sumRate+=d,n.multDmg.totalRate*=1+d}}}}}}),n.crit.values.length>0){let E=this.#a.skill.get(s.skillId);a.itemSet?.forEach(S=>{if(x[S.type]===2&&G[S.keystat]===76)n.critDmgRate+=S.value/1e4;else if(x[S.type]===4){let I=this.#a.combatEffect.get(S.keyindex);n.critDmgRate+=this.getCritMultiplierFromCombatEffect(I,{self:a,target:i,caster:a,skill:E,hitOption:w,targetCount:e})}a.skills.get(s.skillId)?.tripods.forEach(I=>{let m=new Map;I.options.forEach(f=>{let u=st[f.type];if(u===45){if((f.params[0]??0)===0||s.skillEffectId===(f.params[0]??0)){let d=f.params[1];if(d){let h=this.#a.combatEffect.get(d);h&&m.set(h.id,h)}}}else if(u===46)m.delete(f.params[0]??0);else if(u===104){if((f.params[0]??0)===0||s.skillEffectId===(f.params[0]??0)){let d=m.get(f.params[1]??0);if(d){let h=structuredClone(d);m.set(d.id,h),h.effects.forEach(p=>{p.actions.forEach(v=>{for(let O=0;O<f.params.length-2;O++)at[f.paramtype]===1?v.args[O]*=1+(f.params[O+2]??0)/100:v.args[O]+=f.params[O+2]??0})})}}}else u===29?((f.params[0]??0)===0||s.skillEffectId===(f.params[0]??0))&&(n.critDmgRate+=(f.params[1]??0)/1e4):u===30&&((f.params[0]??0)===0||s.skillEffectId===(f.params[0]??0))&&(n.crit.selfSumRate+=(f.params[1]??0)/1e4)}),m.forEach(f=>{n.critDmgRate+=this.getCritMultiplierFromCombatEffect(f,{self:a,target:i,caster:a,skill:E,hitOption:w,targetCount:e})})})})}if(n.skillDamRate.values.length>0){let E=this.#r.getStats(a.name)?.find(S=>S.id===5)?.value;E&&(n.skillDamRate.selfSumRate+=E/1e4)}let D=0;if(n.crit.values.length>0){n.crit.selfSumRate+=(this.#r.getStats(a.name)?.find(S=>S.id===0)?.value??0)/.2794/1e4;let E=Math.min(Math.max(0,1-n.crit.selfSumRate),n.crit.sumRate);D=(E*n.critDmgRate-E)/(n.crit.selfSumRate*n.critDmgRate-n.crit.selfSumRate+1)}let T=n.atkPowAmplify.values.length<=0?{rate:0}:n.atkPowAmplify.values.reduce((E,S)=>E.rate>S.rate?E:S),M=(1+D)*(1+n.atkPowSubRate2.sumRate/(1+n.atkPowSubRate2.selfSumRate))*(1+n.skillDamRate.sumRate/(1+n.skillDamRate.selfSumRate))*(1+T.rate)*n.multDmg.totalRate*n.atkPowSubRate1.totalRate-1,j=D+n.atkPowSubRate2.sumRate/(1+n.atkPowSubRate2.selfSumRate)+n.skillDamRate.sumRate/(1+n.skillDamRate.selfSumRate)+T.rate+(n.multDmg.totalRate-1)+(n.atkPowSubRate1.totalRate-1);{let E=M*s.damage/(j*(1+M)),S=D*E/n.crit.sumRate;n.crit.values.forEach(f=>{let u=f.rate*S,d=this.#t.entities.get(f.casterEntity.name);this.applyRdps(l,d,g,u)}),n.atkPowSubRate2.values.forEach(f=>{let u=f.rate/(1+n.atkPowSubRate2.selfSumRate)*E,d=this.#t.entities.get(f.casterEntity.name);this.applyRdps(l,d,g,u)}),n.skillDamRate.values.forEach(f=>{let u=f.rate/(1+n.skillDamRate.selfSumRate)*E,d=this.#t.entities.get(f.casterEntity.name);this.applyRdps(l,d,g,u)});let I=(n.multDmg.totalRate-1)*E/n.multDmg.sumRate;n.multDmg.values.forEach(f=>{let u=f.rate*I,d=this.#t.entities.get(f.casterEntity.name);this.applyRdps(l,d,g,u)});let m=(n.atkPowSubRate1.totalRate-1)*E/n.atkPowSubRate1.sumRate;if(n.atkPowSubRate1.values.forEach(f=>{let u=f.rate*m,d=this.#t.entities.get(f.casterEntity.name);this.applyRdps(l,d,g,u)}),T.rate>0){let f=T.rate*E,u=this.#t.entities.get(T.casterEntity?.name);this.applyRdps(l,u,g,f)}}}let pt={timestamp:+t,damage:s.damage,targetEntity:y.id,isCrit:_,isBackAttack:K,isFrontAttack:U,isBuffedBySupport:P,isDebuffedBySupport:L,buffedBy:[...C],debuffedBy:[...b]},gt=BigInt("0x"+l.id);this.addBreakdown(gt,k,pt)}y.isPlayer&&(this.#t.damageStatistics.totalDamageTaken+=s.damage,this.#t.damageStatistics.topDamageTaken=Math.max(this.#t.damageStatistics.topDamageTaken,y.damageTaken)),y.isBoss&&(this.#t.currentBoss=y),this.#t.fightStartedOn===0&&(this.#t.fightStartedOn=+t),this.#t.lastCombatPacket=+t}getBuffAfterTripods(a,r,i){if(!a||r.entityType!==1)return a;let s=structuredClone(a);return r.skills.get(i.skillId)?.tripods.forEach(e=>{e.options.forEach(t=>{let o=st[t.type];if(o===19){if(((t.params[0]??0)===0||i.skillEffectId===(t.params[0]??0))&&s.id===(t.params[1]??0)){let c=new Map;for(let l=2;l<t.params.length;l+=2)t.params[l]&&t.params[l+1]&&c.set(t.params[l]??0,t.params[l+1]??0);s.passiveoption.forEach(l=>{let y=c.get(G[l.keystat]);x[l.type]===2&&y&&(at[t.paramtype]===0?l.value+=y:l.value*=1+y/100)})}}else if(o===42){if(((t.params[0]??0)===0||i.skillEffectId===(t.params[0]??0))&&s.id===(t.params[1]??0)){let c=G[t.params[2]??0],l=t.params[3]??0;c&&l!==void 0&&s.passiveoption.push({type:"stat",keystat:c,keyindex:0,value:l})}}else if(o===21&&s.statuseffectvalues&&((t.params[0]??0)===0||i.skillEffectId===(t.params[0]??0))&&s.id===(t.params[1]??0))if((t.params[2]??0)===0)s.statuseffectvalues=t.params.slice(3);else{let c=[];for(let l=0;l<Math.max(s.statuseffectvalues.length,t.params.length-3);l++)t.params[l+3]&&c.push((s.statuseffectvalues[l]??0)*(1+(t.params[l+3]??0)/100));s.statuseffectvalues=c}})}),s}getCritMultiplierFromCombatEffect(a,r){if(!a)return 0;let i=0;return a.effects.filter(s=>s.actions.find(e=>et[e.type]===4)).forEach(s=>{this.#a.isCombatEffectConditionsValid({effect:s,...r})&&s.actions.filter(e=>et[e.type]===4).forEach(e=>{i+=(e.args[0]??0)/100})}),i}applyRdps(a,r,i,s){r&&(r.damageInfo.rdpsDamageGiven+=s),r&&this.#a.isSupportClassId(r.classId)&&(a.damageInfo.rdpsDamageReceivedSupp+=s,i.damageInfo.rdpsDamageReceivedSupp+=s),a.damageInfo.rdpsDamageReceived+=s,i.damageInfo.rdpsDamageReceived+=s}onStartSkill(a,r,i){let s=this.updateEntity(a,{isDead:!1},i);if(s){s.hits.casts+=1;let e=s.skills.get(r);e||(e={...this.createEntitySkill(),id:r,...this.getSkillNameIcon(r,0)},s.skills.set(r,e)),e.hits.casts+=1}}onShieldUsed(a,r,i,s){if(s<0&&console.error("Shield change values was negative, shield ammount increased"),a.entityType===1&&r.entityType===1){if(!this.#t.damageStatistics.effectiveShieldingBuffs.has(i)){let y=this.#a.getStatusEffectHeaderData(i);y&&this.#t.damageStatistics.effectiveShieldingBuffs.set(i,y)}let e=new Date,t=this.updateEntity(a,{},e),o=this.updateEntity(r,{},e);t.damagePreventedByShield+=s;let c=t.damagePreventedByShieldBy.get(i)??0;t.damagePreventedByShieldBy.set(i,c+s),this.#t.damageStatistics.topEffectiveShieldingUsed=Math.max(t.damagePreventedByShield,this.#t.damageStatistics.topEffectiveShieldingUsed),o.damagePreventedWithShieldOnOthers+=s;let l=o.damagePreventedWithShieldOnOthersBy.get(i)??0;o.damagePreventedWithShieldOnOthersBy.set(i,l+s),this.#t.damageStatistics.topEffectiveShieldingDone=Math.max(o.damagePreventedWithShieldOnOthers,this.#t.damageStatistics.topEffectiveShieldingDone),this.#t.damageStatistics.totalEffectiveShieldingDone+=s}}onShieldApplied(a,r,i,s){let e=new Date,t=this.updateEntity(a,{},e),o=this.updateEntity(r,{},e);if(o.isPlayer&&t.isPlayer){if(!this.#t.damageStatistics.appliedShieldingBuffs.has(i)){let y=this.#a.getStatusEffectHeaderData(i);y&&this.#t.damageStatistics.appliedShieldingBuffs.set(i,y)}t.shieldReceived+=s,o.shieldDone+=s;let c=o.shieldDoneBy.get(i)??0;o.shieldDoneBy.set(i,c+s);let l=t.shieldReceivedBy.get(i)??0;t.shieldReceivedBy.set(i,l+s),this.#t.damageStatistics.topShieldDone=Math.max(o.shieldDone,this.#t.damageStatistics.topShieldDone),this.#t.damageStatistics.topShieldGotten=Math.max(t.shieldReceived,this.#t.damageStatistics.topShieldGotten),this.#t.damageStatistics.totalShieldDone+=s}}getSkillNameIcon(a,r){if(a===0&&r===0)return{name:"Bleed",icon:"buff_168.png"};if(a===0){let i=this.#a.skillEffect.get(r);if(i&&i.itemname)return{name:i.itemname,icon:i.icon??""};if(i){if(i.sourceskill){let s=this.#a.skill.get(i.sourceskill);if(s)return{name:s.name,icon:s.icon}}else{let s=this.#a.skill.get(Math.floor(r/10));if(s)return{name:s.name,icon:s.icon}}return{name:i.comment}}else return{name:this.#a.getSkillName(a)}}else{let i=this.#a.skill.get(a);return!i&&(i=this.#a.skill.get(a-a%10),!i)?{name:this.#a.getSkillName(a),icon:""}:i.summonsourceskill?(i=this.#a.skill.get(i.summonsourceskill),i?{name:i.name+" (Summon)",icon:i.icon}:{name:this.#a.getSkillName(a),icon:""}):i.sourceskill?(i=this.#a.skill.get(i.sourceskill),i?{name:i.name,icon:i.icon}:{name:this.#a.getSkillName(a),icon:""}):{name:i.name,icon:i.icon}}}updateEntity(a,r,i){let s={lastUpdate:+i},e=this.#t.entities.get(a.name),t={};if(!e||a.entityType===1&&e.isPlayer!==!0){if(a.entityType===1){let o=a;t={classId:o.class,gearScore:o.gearLevel,isPlayer:!0}}else if(a.entityType===2||a.entityType===3){let o=a;t={npcId:o.typeId,isBoss:o.isBoss}}else if(a.entityType===4){let o=a;t={npcId:o.typeId,isBoss:o.isBoss,isEsther:!0,icon:o.icon}}}return e?Object.assign(e,r,s,t):(e={...this.createEntity(),...r,...s,...t,name:a.name,id:a.entityId.toString(16)},this.#t.entities.set(a.name,e)),e}updateOrCreateEntity(a,r,i){if(!(!r.name||!r.id)){for(let[s,e]of this.#t.entities)if(r.id===e.id){this.#t.entities.delete(s),this.updateEntity(a,{...e,...r},i);return}this.updateEntity(a,r,i)}}createEntitySkill(){return{id:0,name:"",icon:"",damageInfo:{damageDealt:0,rdpsDamageReceived:0,rdpsDamageReceivedSupp:0,rdpsDamageGiven:0,damageDealtDebuffedBySupport:0,damageDealtBuffedBySupport:0},maxDamage:0,hits:{casts:0,total:0,crit:0,backAttack:0,totalBackAttack:0,frontAttack:0,totalFrontAttack:0,counter:0,hitsDebuffedBySupport:0,hitsBuffedBySupport:0,hitsBuffedBy:new Map,hitsDebuffedBy:new Map},breakdown:[],damageDealtDebuffedBy:new Map,damageDealtBuffedBy:new Map}}createEntity(){return{lastUpdate:0,id:"",npcId:0,name:"",classId:0,isBoss:!1,isPlayer:!1,isDead:!1,deaths:0,deathTime:0,gearScore:0,currentHp:0,maxHp:0,damageInfo:{damageDealt:0,rdpsDamageReceived:0,rdpsDamageReceivedSupp:0,rdpsDamageGiven:0,damageDealtDebuffedBySupport:0,damageDealtBuffedBySupport:0},healingDone:0,shieldDone:0,damageTaken:0,skills:new Map,hits:{casts:0,total:0,crit:0,backAttack:0,totalBackAttack:0,frontAttack:0,totalFrontAttack:0,counter:0,hitsDebuffedBySupport:0,hitsBuffedBySupport:0,hitsBuffedBy:new Map,hitsDebuffedBy:new Map},damageDealtDebuffedBy:new Map,damageDealtBuffedBy:new Map,damagePreventedByShieldBy:new Map,damagePreventedWithShieldOnOthersBy:new Map,shieldDoneBy:new Map,shieldReceivedBy:new Map,damagePreventedWithShieldOnOthers:0,damagePreventedByShield:0,shieldReceived:0,statApiValid:!1}}getBroadcast(){let a={...this.#t};return a.entities=new Map,this.#t.entities.forEach((r,i)=>{!r.isPlayer&&!r.isEsther||(r.statApiValid=this.#r.isCurrentZoneValid()&&this.#r.cache.get(r.name)?.status===2,a.entities.set(i,{...r}))}),a.localPlayer=this.#i.localPlayer.name,a}resetBreakdowns(){this.#e.clear()}createBreakdownEntity(a){return this.#e.has(a)||this.#e.set(a,new Map),this.#e.get(a)}removeBreakdownEntry(a){this.#e.delete(a)}addBreakdown(a,r,i){let s=this.createBreakdownEntity(a);if(s.has(r))s.get(r).push(i);else{let e=new Array(i);s.set(r,e)}}getBreakdowns(a,r){let i=this.#e.get(a);if(i)return i.get(r)}clearBreakdowns(a,r){let i=this.#e.get(a);i&&i.delete(r)}applyBreakdowns(a,r=!0){a.forEach(i=>{i.skills.forEach(s=>{let e=BigInt("0x"+i.id),t=this.getBreakdowns(e,s.id);t&&(s.breakdown=[...t])})}),r&&this.resetBreakdowns()}setKillState(a){this.#t.killState=a}setZoneLevel(a){this.#t.zoneLevel=Q[a]}};var X=class{characterIdToPartyId;entityIdToPartyId;raidInstanceToPartyInstances;ownName;characterNameToCharacterId;#t;constructor(a){this.characterIdToPartyId=new Map,this.entityIdToPartyId=new Map,this.raidInstanceToPartyInstances=new Map,this.characterNameToCharacterId=new Map,this.#t=a}add(a,r,i=void 0,s=void 0,e=void 0){!i&&!s||(i&&!s&&(s=this.#t.getEntityId(i)),s&&!i&&(i=this.#t.getEntityId(s)),i&&this.characterIdToPartyId.set(i,r),s&&this.entityIdToPartyId.set(s,r),e&&i&&this.characterNameToCharacterId.set(e,i),this.registerPartyId(a,r))}completeEntry(a,r){let i=this.getPartyIdFromCharacterId(a),s=this.getPartyIdFromEntityId(r);i&&s||(!i&&s&&this.characterIdToPartyId.set(a,s),!s&&i&&this.entityIdToPartyId.set(r,i))}changeEntityId(a,r){let i=this.getPartyIdFromEntityId(a);i&&(this.entityIdToPartyId.delete(a),this.entityIdToPartyId.set(r,i))}setOwnName(a){this.ownName=a}remove(a,r){if(r===this.ownName){this.removePartyMappings(a);return}let i=this.characterNameToCharacterId.get(r);if(this.characterNameToCharacterId.delete(r),!i)return;this.characterIdToPartyId.delete(i);let s=this.#t.getEntityId(i);s&&this.characterIdToPartyId.delete(s)}isCharacterInParty(a){return this.characterIdToPartyId.has(a)}isEntityInParty(a){return this.entityIdToPartyId.has(a)}getPartyIdFromCharacterId(a){return this.characterIdToPartyId.get(a)}getPartyIdFromEntityId(a){return this.entityIdToPartyId.get(a)}removePartyMappings(a){let r=this.getRaidInstanceId(a),i=r?this.raidInstanceToPartyInstances.get(r)??new Set([a]):new Set([a]);for(let[s,e]of this.characterIdToPartyId)if(i.has(e)){this.characterIdToPartyId.delete(s);for(let[t,o]of this.characterNameToCharacterId)if(s===o){this.characterNameToCharacterId.delete(t);break}}for(let[s,e]of this.entityIdToPartyId)i.has(e)&&this.entityIdToPartyId.delete(s)}getRaidInstanceId(a){for(let r of this.raidInstanceToPartyInstances)if(r[1].has(a))return r[0]}registerPartyId(a,r){let i=this.raidInstanceToPartyInstances.get(a);i||(i=new Set,this.raidInstanceToPartyInstances.set(a,i)),i.add(r)}partyInfo(a,r,i){let s=a.parsed;if(s){if(s.memberDatas.length===1&&s.memberDatas[0]?.name===i.name){this.remove(s.partyInstanceId,s.memberDatas[0].name);return}this.removePartyMappings(s.partyInstanceId);for(let e of s.memberDatas){e.characterId===i.characterId&&this.setOwnName(e.name);let t=this.#t.getEntityId(e.characterId);if(t){let o=r.get(t);if(o&&o.entityType===1&&o.name!==e.name){let c=o;c.gearLevel=e.gearLevel,c.name=e.name,c.class=e.classId}}this.add(s.raidInstanceId,s.partyInstanceId,e.characterId,t,e.name)}}}};var tt=class{entityToCharacterId;characterToEntityId;constructor(){this.entityToCharacterId=new Map,this.characterToEntityId=new Map}addMapping(a,r){this.entityToCharacterId.set(r,a),this.characterToEntityId.set(a,r)}getCharacterId(a){return this.entityToCharacterId.get(a)}getEntityId(a){return this.characterToEntityId.get(a)}clear(){this.entityToCharacterId.clear(),this.characterToEntityId.clear()}};var ht=class extends Pt{#t;#i;#o;#r;#a;#e;#s;#n;#l;#c;constructor(a,r,i,s){super(),this.#t=a,this.#i=r,this.#o=new tt,this.#r=new X(this.#o),this.#a=new lt(this.#r,this.#i,s.isLive??!0),this.#e=new ct(this.#o,this.#r,this.#a,this.#i),this.#n=new V(this.#e,i,mt(this.#t,s.isLive)?this.#t:void 0),this.#s=new J(this.#e,this.#a,this.#n,this.#i,s),this.#s.emit=this.emit.bind(this),this.#l=!1,this.#c=!1,this.#s.options.isLive&&setInterval(this.broadcastStateChange.bind(this),100),this.#t.on("APP_StatApi",e=>{let t=e.parsed;t&&this.#n.updatePlayerStats(t.players)}).on("AbilityChangeNotify",e=>{}).on("ActiveAbilityNotify",e=>{}).on("AddonSkillFeatureChangeNotify",e=>{}).on("BlockSkillStateNotify",e=>{}).on("CounterAttackNotify",e=>{let t=e.parsed;if(!t)return;let o=this.#e.entities.get(t.sourceId);o&&this.#s.onCounterAttack(o,e.time)}).on("DeathNotify",e=>{let t=e.parsed;if(!t)return;let o=this.#e.entities.get(t.targetId);o&&this.#s.onDeath(o,e.time)}).on("EquipChangeNotify",e=>{let t=e.parsed;if(!t)return;let o=this.#e.entities.get(t.objectId);if(!o||o.entityType!==1)return;o.itemSet=this.#e.getPlayerSetOptions(t.equipItemDataList);let c=[];t.equipItemDataList.forEach(l=>{l.id!==void 0&&l.slot!==void 0&&c.push({id:l.id,slot:l.slot})}),o.items.equipList=c}).on("EquipLifeToolChangeNotify",e=>{let t=e.parsed;if(!t)return;let o=this.#e.entities.get(t.objectId);if(!o||o.entityType!==1)return;let c=[];t.equipLifeToolDataList.forEach(l=>{l.id!==void 0&&l.slot!==void 0&&c.push({id:l.id,slot:l.slot})}),o.items.lifeToolList=c}).on("IdentityStanceChangeNotify",e=>{let t=e.parsed;if(!t)return;let o=this.#e.entities.get(t.objectId);o&&o.entityType===1&&(o.stance=t.stance)}).on("IdentityGaugeChangeNotify",e=>{}).on("InitAbility",e=>{}).on("InitEnv",e=>{this.#e.processInitEnv(e),this.#s.onInitEnv(e,e.time)}).on("InitLocal",e=>{}).on("InitPC",e=>{let t=this.#e.processInitPC(e);if(t&&e.parsed){let o=this.#i.getStatPairMap(e.parsed.statPair);this.#s.updateOrCreateEntity(t,{id:t.entityId.toString(16),name:t.name,classId:t.class,isPlayer:!0,gearScore:t.gearLevel,currentHp:Number(o.get(1))||0,maxHp:Number(o.get(27))||0},e.time)}}).on("InitItem",e=>{let t=e.parsed;if(t){if([1,20].includes(t.storageType)){this.#e.localPlayer.itemSet=this.#e.getPlayerSetOptions(t.itemDataList);let o=[];t.itemDataList.forEach(c=>{c.id!==void 0&&c.slot!==void 0&&o.push({id:c.id,slot:c.slot})}),this.#e.localPlayer.items.equipList=o}else if(t.storageType===21){let o=[];t.itemDataList.forEach(c=>{c.id!==void 0&&c.slot!==void 0&&o.push({id:c.id,slot:c.slot})}),this.#e.localPlayer.items.lifeToolList=o}}}).on("MigrationExecute",e=>{this.#n.zoneSyncStatus=0;let t=e.parsed;t&&(this.#e.localPlayer.characterId===0n&&(this.#e.localPlayer.characterId=t.account_CharacterId1<t.account_CharacterId2?t.account_CharacterId1:t.account_CharacterId2),this.#n.ip=e.parsed.serverAddr.split(":")[0])}).on("NewNpc",e=>{let t=this.#e.processNewNpc(e);if(t&&e.parsed){let o=this.#i.getStatPairMap(e.parsed.npcStruct.statPair);this.#s.updateOrCreateEntity(t,{id:t.entityId.toString(16),name:t.name,npcId:t.typeId,isPlayer:!1,isBoss:t.isBoss,currentHp:Number(o.get(1))||0,maxHp:Number(o.get(27))||0},e.time)}}).on("NewNpcSummon",e=>{let t=this.#e.processNewNpcSummon(e);if(t&&e.parsed){let o=this.#i.getStatPairMap(e.parsed.npcData.statPair);this.#s.updateOrCreateEntity(t,{id:t.entityId.toString(16),name:t.name,npcId:t.typeId,isPlayer:!1,isBoss:t.isBoss,currentHp:Number(o.get(1))||0,maxHp:Number(o.get(27))||0},e.time)}}).on("NewPC",e=>{let t=this.#e.processNewPC(e);if(t&&e.parsed){let o=this.#i.getStatPairMap(e.parsed.pcStruct.statPair);this.#s.updateOrCreateEntity(t,{id:t.entityId.toString(16),name:t.name,classId:t.class,isPlayer:!0,gearScore:t.gearLevel,currentHp:Number(o.get(1))||0,maxHp:Number(o.get(27))||0},e.time)}}).on("NewProjectile",e=>{let t=e.parsed;if(!t)return;let o={entityId:t.projectileInfo.projectileId,entityType:5,name:t.projectileInfo.projectileId.toString(16),ownerId:t.projectileInfo.ownerId,skillEffectId:t.projectileInfo.skillEffect,skillId:t.projectileInfo.skillId,stats:new Map};this.#e.entities.set(o.entityId,o)}).on("NewTrap",e=>{let t=e.parsed;if(!t)return;let o={entityId:t.trapData.objectId,entityType:5,name:t.trapData.objectId.toString(16),ownerId:t.trapData.ownerId,skillEffectId:t.trapData.skillEffect,skillId:t.trapData.skillId,stats:new Map};this.#e.entities.set(o.entityId,o)}).on("ParalyzationStateNotify",e=>{}).on("PartyInfo",e=>{this.#r.partyInfo(e,this.#e.entities,this.#e.localPlayer)}).on("PartyLeaveResult",e=>{let t=e.parsed;t&&this.#r.remove(t.partyInstanceId,t.name)}).on("PartyPassiveStatusEffectAddNotify",e=>{}).on("PartyPassiveStatusEffectRemoveNotify",e=>{}).on("PartyStatusEffectAddNotify",e=>{let t=e.parsed;if(t)for(let o of t.statusEffectDatas){let c=t.playerIdOnRefresh!==0n?t.playerIdOnRefresh:o.sourceId,l=this.#e.getSourceEntity(c);this.#a.RegisterStatusEffect(this.#a.buildStatusEffect(o,t.characterId,l.entityId,0,e.time))}}).on("PartyStatusEffectRemoveNotify",e=>{let t=e.parsed;if(t)for(let o of t.statusEffectIds){let c=this.#a.RemoveStatusEffect(t.characterId,o,0,t.reason,e.time);c&&c.statusEffectId===9701&&this.#n.syncData()}}).on("PartyStatusEffectResultNotify",e=>{let t=e.parsed;t&&this.#r.add(t.raidInstanceId,t.partyInstanceId,t.characterId)}).on("PassiveStatusEffectAddNotify",e=>{}).on("PassiveStatusEffectRemoveNotify",e=>{}).on("RaidBegin",e=>{let t=e.parsed;t&&(this.#i.statQueryFilter.raid.has(t.raidId)?this.#n.zoneSyncStatus|=16:this.#n.zoneSyncStatus|=8)}).on("ZoneMemberLoadStatusNotify",e=>{let t=e.parsed;t&&(this.#s.setZoneLevel(t.zoneLevel),this.#i.statQueryFilter.zone.has(t.zoneId)&&[0,1,5].includes(t.zoneLevel)?this.#n.zoneSyncStatus|=4:this.#n.zoneSyncStatus|=2)}).on("RaidBossKillNotify",e=>{this.#s.setKillState(1),this.#s.onPhaseTransition(1,e.time)}).on("RaidResult",e=>{e.parsed?.raidResult===1&&this.#s.setKillState(1),this.#s.onPhaseTransition(0,e.time)}).on("RemoveObject",e=>{let t=e.parsed;if(t)for(let o of t.unpublishedObjects)this.#a.RemoveLocalObject(o.objectId,e.time)}).on("SkillCastNotify",e=>{let t=e.parsed;if(!t)return;let o=this.#e.getSourceEntity(t.caster);o=this.#e.guessIsPlayer(o,t.skillId),this.#s.onStartSkill(o,t.skillId,e.time)}).on("SkillDamageAbnormalMoveNotify",e=>{let t=e.parsed;if(!t)return;let o=this.#e.getSourceEntity(t.sourceId);t.skillDamageAbnormalMoveEvents.forEach(c=>{let l=this.#e.getOrCreateEntity(c.skillDamageEvent.targetId),y=this.#e.getOrCreateEntity(t.sourceId);l.stats.set(1,c.skillDamageEvent.curHp),l.stats.set(27,c.skillDamageEvent.maxHp),this.#s.onDamage(o,y,l,{skillId:t.skillId,skillEffectId:t.skillEffectId,damage:Number(c.skillDamageEvent.damage),modifier:c.skillDamageEvent.modifier,targetCurHp:Number(c.skillDamageEvent.curHp),targetMaxHp:Number(c.skillDamageEvent.maxHp),damageAttr:c.skillDamageEvent.damageAttr??0,damageType:c.skillDamageEvent.damageType},t.skillDamageAbnormalMoveEvents.length,e.time)})}).on("SkillDamageNotify",e=>{let t=e.parsed;if(!t)return;let o=this.#e.getSourceEntity(t.sourceId);t.skillDamageEvents.forEach(c=>{let l=this.#e.getOrCreateEntity(c.targetId),y=this.#e.getOrCreateEntity(t.sourceId);this.#s.onDamage(o,y,l,{skillId:t.skillId,skillEffectId:t.skillEffectId??0,damage:Number(c.damage),modifier:c.modifier,targetCurHp:Number(c.curHp),targetMaxHp:Number(c.maxHp),damageAttr:c.damageAttr??0,damageType:c.damageType},t.skillDamageEvents.length,e.time)})}).on("SkillStageNotify",e=>{}).on("SkillStartNotify",e=>{let t=e.parsed;if(!t)return;let o=this.#e.getSourceEntity(t.sourceId);if(o=this.#e.guessIsPlayer(o,t.skillId),o.entityType===1){let c=o,l=c.skills.get(t.skillId);if(l||(l={effects:new Set,tripods:new Map},c.skills.set(t.skillId,l)),l.level=t.skillLevel,t.skillOptionData.tripodIndex&&t.skillOptionData.tripodLevel){l.tripods||(l.tripods=new Map);for(let[y,k]of["first","second","third"].entries()){if(t.skillOptionData.tripodIndex[k]===0){for(let b=1;b<=3;b++)l.tripods.delete(3*y+b);continue}let g=3*y+t.skillOptionData.tripodIndex[k],q=t.skillOptionData.tripodLevel[k],w=l.tripods.get(g);if(w&&q===w.level)continue;for(let b=1;b<=3;b++)l.tripods.delete(3*y+b);let _=this.#i.skillFeature.get(t.skillId)?.get(g),C=[];_&&_.entries.forEach(b=>{b.level!==0&&b.level!==q||C.push(b)}),l.tripods.set(g,{level:t.skillOptionData.tripodLevel[k],options:C.sort((b,z)=>z.level-b.level)})}}}this.#s.onStartSkill(o,t.skillId,e.time)}).on("StatusEffectAddNotify",e=>{let t=e.parsed;if(!t)return;let o=this.#e.getSourceEntity(t.statusEffectData.sourceId);this.#a.RegisterStatusEffect(this.#a.buildStatusEffect(t.statusEffectData,t.objectId,o.entityId,1,e.time))}).on("StatusEffectDurationNotify",e=>{let t=e.parsed;t&&this.#a.UpdateDuration(t.effectInstanceId,t.targetId,t.expirationTick,1)}).on("StatusEffectRemoveNotify",e=>{let t=e.parsed;if(t)for(let o of t.statusEffectIds){let c=this.#a.RemoveStatusEffect(t.objectId,o,1,t.reason,e.time);c&&c.statusEffectId===9701&&this.#n.syncData()}}).on("StatusEffectSyncDataNotify",e=>{let t=e.parsed;t&&this.#a.SyncStatusEffect(t.effectInstanceId,t.characterId,t.objectId,t.value,this.#e.localPlayer.characterId)}).on("TriggerBossBattleStatus",e=>{this.#s.onPhaseTransition(2,e.time)}).on("TriggerFinishNotify",e=>{}).on("TriggerStartNotify",e=>{let t=e.parsed;if(t)switch(t.triggerSignalType){case 57:case 59:case 61:case 63:case 74:case 76:this.#s.setKillState(1);break;case 58:case 60:case 62:case 64:case 75:case 77:this.#s.setKillState(0);break;case 27:case 10:case 11:this.#n.syncData()}}).on("TroopMemberUpdateMinNotify",e=>{}).on("ZoneObjectUnpublishNotify",e=>{let t=e.parsed;t&&this.#a.RemoveLocalObject(t.objectId,e.time)}).on("ZoneStatusEffectAddNotify",e=>{}).on("TroopMemberUpdateMinNotify",e=>{let t=e.parsed;if(t&&t.statusEffectDatas.length>0)for(let o of t.statusEffectDatas){let c=this.#o.getEntityId(t.characterId),l=o.value?o.value.readUInt32LE():0,y=o.value?o.value.readUInt32LE(8):0,k=l<y?l:y;this.#a.SyncStatusEffect(o.effectInstanceId,t.characterId,c,k,this.#e.localPlayer.characterId)}}).on("ZoneStatusEffectRemoveNotify",e=>{}),this.#a.on("shieldApplied",e=>{let t=e.targetId;if(e.type===0&&(t=this.#o.getEntityId(e.targetId)??t),t===void 0)return;let o=this.#e.getSourceEntity(e.sourceId),c=this.#e.getOrCreateEntity(t);this.#s.onShieldApplied(c,o,e.statusEffectId,e.value)}).on("shieldChanged",(e,t,o)=>{let c=e.targetId;if(e.type===0&&(c=this.#o.getEntityId(e.targetId)??c),c===void 0)return;let l=this.#e.getSourceEntity(e.sourceId),y=this.#e.getOrCreateEntity(c);this.#s.onShieldUsed(y,l,e.statusEffectId,t-o)})}broadcastStateChange(){this.emit("state-change",this.#s.getBroadcast())}reset(){this.#s.resetState(+new Date)}cancelReset(){this.#s.cancelReset()}updateOptions(a){this.#s.updateOptions(a)}onConnect(a){this.#n.ip||(this.#n.ip=a.split(":")[0],mt(this.#t,this.#s.options.isLive)&&this.#t.appendLog(new Y({account_CharacterId1:0n,serverAddr:a,account_CharacterId2:0n},11,ft)))}get encounters(){return this.#s.splitEncounter(new Date),this.#s.encounters}};function mt(A,a){return A instanceof ut||A.appendLog&&a}export{ht as Parser};
+import {
+  EntityTracker,
+  StatusTracker
+} from "../chunk-BQPXZE2P.mjs";
+import "../chunk-G5OTMVG2.mjs";
+import {
+  LiveLogger,
+  LogEvent,
+  logMapping,
+  write
+} from "../chunk-R7OZQ4O2.mjs";
+import {
+  addontype,
+  combateffectactiontype,
+  paramtype,
+  skillfeaturetype,
+  stattype,
+  zonelevel
+} from "../chunk-F546YONE.mjs";
+import "../chunk-32GW4DAM.mjs";
+import "../chunk-Q4CJJZON.mjs";
+import {
+  __privateAdd,
+  __privateGet,
+  __privateSet,
+  __publicField
+} from "../chunk-NZTU4WRF.mjs";
+
+// src/logger/parser.ts
+import { TypedEmitter as TypedEmitter2 } from "tiny-typed-emitter";
+
+// src/logger/gameTracker.ts
+import { TypedEmitter } from "tiny-typed-emitter";
+
+// src/logger/statapi.ts
+import { createHash } from "crypto";
+import axios from "axios";
+var _logger, _entityTracker, _clientId;
+var _StatApi = class {
+  constructor(entityTracker, clientId, logger) {
+    __privateAdd(this, _logger, void 0);
+    __privateAdd(this, _entityTracker, void 0);
+    __privateAdd(this, _clientId, void 0);
+    __publicField(this, "ip");
+    __publicField(this, "zoneSyncStatus", 0 /* INVALID */);
+    __publicField(this, "cache", /* @__PURE__ */ new Map());
+    if (logger)
+      __privateSet(this, _logger, logger);
+    __privateSet(this, _entityTracker, entityTracker);
+    __privateSet(this, _clientId, clientId);
+  }
+  syncData() {
+    const playerList = [];
+    __privateGet(this, _entityTracker).entities.forEach((e) => {
+      if (e.entityType === 1 /* Player */) {
+        playerList.push(e);
+      }
+    });
+    this.getPlayersData(playerList);
+  }
+  getPlayersData(playerList, retries = 0) {
+    if (retries > 24) {
+      playerList.forEach((p) => {
+        const cache = this.cache.get(p.name);
+        if (cache && cache.status === 1 /* PENDING */)
+          cache.status = 0 /* INVALID */;
+        else if (!cache) {
+          this.cache.set(p.name, {
+            hash: "",
+            status: 0 /* INVALID */,
+            info: {
+              name: p.name,
+              stats: [],
+              elixirs: [],
+              gems: []
+            }
+          });
+        }
+      });
+      return;
+    }
+    if (!this.isCurrentZoneValid()) {
+      playerList.forEach((p) => {
+        const cache = this.cache.get(p.name);
+        if (cache && cache.status === 1 /* PENDING */)
+          this.cache.delete(p.name);
+      });
+      return;
+    }
+    if (!__privateGet(this, _logger))
+      return;
+    if (!this.ip)
+      return;
+    const playerQuery = {};
+    playerList.forEach((p) => {
+      const hash = this.getHash(p);
+      let playerCache = this.cache.get(p.name);
+      if (!hash) {
+        if (playerCache && playerCache.status === 1 /* PENDING */)
+          this.cache.delete(p.name);
+        return;
+      }
+      if (playerCache) {
+        if (playerCache.status === 0 /* INVALID */)
+          return;
+        if (retries === 0 && playerCache.status === 1 /* PENDING */)
+          return;
+        if (playerCache.status === 2 /* VALID */ && playerCache.hash === hash)
+          return;
+      }
+      if (!playerCache) {
+        playerCache = {
+          hash,
+          status: 1 /* PENDING */,
+          info: {
+            name: p.name,
+            stats: [],
+            elixirs: [],
+            gems: []
+          }
+        };
+      } else {
+        playerCache.hash = hash;
+        playerCache.status = 1 /* PENDING */;
+      }
+      this.cache.set(p.name, playerCache);
+      playerQuery[p.name] = hash;
+    });
+    if (Object.keys(playerQuery).length === 0)
+      return;
+    axios.get(`${_StatApi.baseUrl}/req2`, {
+      params: { ip: this.ip, ci: __privateGet(this, _clientId), ...playerQuery }
+      /*, timeout: ??*/
+    }).then((res) => {
+      if (res.status !== 200)
+        return;
+      if (__privateGet(this, _logger)) {
+        try {
+          const json = res.data;
+          const logMap = logMapping.get(6e4 /* APP_StatApi */);
+          if (logMap) {
+            const [logName, readLog, writeLog] = logMap;
+            const parsed = { players: json };
+            playerList = playerList.filter((p) => !json.find((c) => c.name === p.name));
+            if (playerList.length > 0)
+              setTimeout(() => {
+                playerList = playerList.map((p) => {
+                  return __privateGet(this, _entityTracker).getEntityByName(p.name);
+                }).filter((p) => p !== void 0 && p.entityType === 1 /* Player */);
+                this.getPlayersData(playerList, retries + 1);
+              }, 1e4);
+            if (parsed.players.length > 0) {
+              const logEvent = new LogEvent(parsed, 6e4 /* APP_StatApi */, writeLog);
+              __privateGet(this, _logger).emit(logName, logEvent);
+              __privateGet(this, _logger).emit("*", logName, logEvent);
+              __privateGet(this, _logger).appendLog(logEvent);
+            }
+          }
+        } catch (e) {
+          setTimeout(() => {
+            playerList = playerList.map((p) => {
+              return __privateGet(this, _entityTracker).getEntityByName(p.name);
+            }).filter((p) => p !== void 0 && p.entityType === 1 /* Player */);
+            this.getPlayersData(playerList, retries + 5);
+          }, 1e4);
+        }
+      }
+    }).catch((e) => {
+      setTimeout(() => {
+        playerList = playerList.map((p) => {
+          return __privateGet(this, _entityTracker).getEntityByName(p.name);
+        }).filter((p) => p !== void 0 && p.entityType === 1 /* Player */);
+        this.getPlayersData(playerList, retries + 5);
+      }, 1e4);
+    });
+  }
+  getHash(p) {
+    if (
+      /*!p.items.lifeToolList || */
+      !p.items.equipList || p.characterId === 0n || !p.class || p.name === "You"
+    )
+      return;
+    const equipData = new Array(32).fill(0);
+    p.items.equipList?.forEach((equip) => {
+      equipData[equip.slot] = equip.id;
+    });
+    const data = `${p.name}${p.class}${p.characterId}${equipData.join("")}`;
+    return createHash("md5").update(data).digest("hex");
+  }
+  updatePlayerStats(players) {
+    players.forEach((p) => {
+      const playerCache = this.cache.get(p.name);
+      if (playerCache) {
+        playerCache.info = p;
+        playerCache.status = 2 /* VALID */;
+      } else {
+        this.cache.set(p.name, {
+          hash: "",
+          //We're in replay, hash isn't used
+          status: 2 /* VALID */,
+          info: p
+        });
+      }
+    });
+  }
+  getStats(name) {
+    if (!this.isCurrentZoneValid())
+      return;
+    const c = this.cache.get(name);
+    if (c && c.status === 2 /* VALID */)
+      return c.info.stats;
+    return;
+  }
+  isCurrentZoneValid() {
+    return this.zoneSyncStatus !== 0 /* INVALID */ && (this.zoneSyncStatus & (2 /* ZONE_INVALID */ | 8 /* RAID_INVALID */)) === 0;
+  }
+  //TODO add a way to reset ?
+};
+var StatApi = _StatApi;
+_logger = new WeakMap();
+_entityTracker = new WeakMap();
+_clientId = new WeakMap();
+__publicField(StatApi, "baseUrl", "https://la.herysia.com");
+
+// src/logger/gameTracker.ts
+var defaultOptions = {
+  isLive: true,
+  dontResetOnZoneChange: false,
+  resetAfterPhaseTransition: false,
+  splitOnPhaseTransition: false
+};
+var GameTracker = class extends TypedEmitter {
+  #game;
+  encounters;
+  #entityTracker;
+  #statusTracker;
+  #statApi;
+  #data;
+  options;
+  resetTimer;
+  phaseTransitionResetRequest;
+  phaseTransitionResetRequestTime;
+  #entityToSkillBreakdown;
+  constructor(entityTracker, statusTracker, statApi, data, options) {
+    super();
+    this.#entityTracker = entityTracker;
+    this.#statusTracker = statusTracker;
+    this.#statApi = statApi;
+    this.#data = data;
+    this.options = { ...defaultOptions, ...options };
+    this.resetTimer = null;
+    this.phaseTransitionResetRequest = false;
+    this.phaseTransitionResetRequestTime = 0;
+    this.#entityToSkillBreakdown = /* @__PURE__ */ new Map();
+    this.encounters = [];
+    this.#game = {
+      startedOn: 0,
+      lastCombatPacket: 0,
+      fightStartedOn: 0,
+      localPlayer: this.#entityTracker.localPlayer.name,
+      //this will be updated on dipatch
+      currentBoss: void 0,
+      killState: 0 /* FAIL */,
+      zoneLevel: zonelevel[0 /* normal */],
+      entities: /* @__PURE__ */ new Map(),
+      damageStatistics: {
+        totalDamageDealt: 0,
+        topDamageDealt: 0,
+        totalDamageTaken: 0,
+        topDamageTaken: 0,
+        totalHealingDone: 0,
+        topHealingDone: 0,
+        totalShieldDone: 0,
+        topShieldDone: 0,
+        debuffs: /* @__PURE__ */ new Map(),
+        buffs: /* @__PURE__ */ new Map(),
+        topShieldGotten: 0,
+        totalEffectiveShieldingDone: 0,
+        topEffectiveShieldingDone: 0,
+        topEffectiveShieldingUsed: 0,
+        effectiveShieldingBuffs: /* @__PURE__ */ new Map(),
+        appliedShieldingBuffs: /* @__PURE__ */ new Map()
+      }
+    };
+  }
+  onCounterAttack(source, time) {
+    const entity = this.updateEntity(source, {}, time);
+    entity.hits.counter += 1;
+  }
+  onInitEnv(pkt, time) {
+    if (this.options.isLive) {
+      this.#game.entities.forEach((e, k, m) => {
+        if (e.hits.total === 0) {
+          m.delete(k);
+        }
+      });
+      if (this.options.dontResetOnZoneChange === false && this.resetTimer === null) {
+        this.resetTimer = setTimeout(() => {
+          this.resetState(+time + 6e3);
+        }, 6e3);
+        this.emit("message", "new-zone");
+      }
+    } else {
+      this.splitEncounter(time);
+      this.emit("message", "new-zone");
+    }
+  }
+  splitEncounter(time) {
+    if (this.#game.fightStartedOn !== 0 && // no combat packets
+    (this.#game.damageStatistics.totalDamageDealt !== 0 || this.#game.damageStatistics.totalDamageTaken !== 0)) {
+      const curState = structuredClone(this.#game);
+      curState.entities.forEach((entity) => {
+        if (!entity.isPlayer)
+          return;
+        entity.statApiValid = this.#statApi.isCurrentZoneValid() && this.#statApi.cache.get(entity.name)?.status === 2 /* VALID */;
+      });
+      curState.localPlayer = this.#entityTracker.localPlayer.name;
+      this.applyBreakdowns(curState.entities);
+      this.encounters.push(curState);
+    }
+    this.resetState(+time);
+  }
+  getBossIfStillExist() {
+    if (this.#game.currentBoss?.id) {
+      const id = BigInt(`0x0${this.#game.currentBoss?.id}`);
+      return this.#entityTracker.entities.has(id) ? this.#game.currentBoss : void 0;
+    }
+    return void 0;
+  }
+  resetState(curTime) {
+    this.cancelReset();
+    this.resetBreakdowns();
+    this.#game = {
+      startedOn: +curTime,
+      lastCombatPacket: +curTime,
+      fightStartedOn: 0,
+      localPlayer: this.#entityTracker.localPlayer.name,
+      //We never reset localplayer outside of initenv or initpc
+      currentBoss: this.getBossIfStillExist(),
+      entities: /* @__PURE__ */ new Map(),
+      killState: 0 /* FAIL */,
+      zoneLevel: this.#game.zoneLevel,
+      damageStatistics: {
+        totalDamageDealt: 0,
+        topDamageDealt: 0,
+        totalDamageTaken: 0,
+        topDamageTaken: 0,
+        totalHealingDone: 0,
+        topHealingDone: 0,
+        totalShieldDone: 0,
+        topShieldDone: 0,
+        debuffs: /* @__PURE__ */ new Map(),
+        buffs: /* @__PURE__ */ new Map(),
+        appliedShieldingBuffs: /* @__PURE__ */ new Map(),
+        effectiveShieldingBuffs: /* @__PURE__ */ new Map(),
+        topEffectiveShieldingDone: 0,
+        topEffectiveShieldingUsed: 0,
+        topShieldGotten: 0,
+        totalEffectiveShieldingDone: 0
+      }
+    };
+    this.emit("reset-state", this.#game);
+  }
+  cancelReset() {
+    if (this.resetTimer)
+      clearTimeout(this.resetTimer);
+    this.resetTimer = null;
+  }
+  onPhaseTransition(phaseCode, time) {
+    if (this.options.isLive) {
+      this.emit("message", `phase-transition-${phaseCode}`);
+      if (this.options.resetAfterPhaseTransition) {
+        this.phaseTransitionResetRequest = true;
+        this.phaseTransitionResetRequestTime = +time;
+      }
+    }
+    if (!this.options.isLive && this.options.splitOnPhaseTransition) {
+      this.splitEncounter(time);
+    }
+  }
+  updateOptions(options) {
+    this.options = { ...this.options, ...options };
+  }
+  onDeath(target, time) {
+    const entity = this.#game.entities.get(target.name);
+    let deaths = 0;
+    if (!entity)
+      deaths = 1;
+    else if (entity.isDead)
+      deaths = entity.deaths;
+    else
+      deaths = entity.deaths + 1;
+    this.updateEntity(target, { isDead: true, deathTime: +time, deaths }, time);
+  }
+  onDamage(owner, source, target, damageData, targetCount, time) {
+    if ((damageData.modifier & 15) === 11 /* damage_share */ && damageData.skillId === 0 && damageData.skillEffectId === 0)
+      return;
+    if (this.phaseTransitionResetRequest && this.phaseTransitionResetRequestTime > 0 && this.phaseTransitionResetRequestTime < +time - 8e3) {
+      this.resetState(+time);
+      this.phaseTransitionResetRequest = false;
+    }
+    const [statusEffectsOnSource, statusEffectsOnTarget] = this.#statusTracker.getStatusEffects(
+      owner,
+      target,
+      this.#entityTracker.localPlayer.characterId,
+      time
+    );
+    if (this.#data.isBattleItem(damageData.skillEffectId, "attack")) {
+      if (source && source.entityType === 5 /* Projectile */) {
+        const proj = source;
+        damageData.skillEffectId = proj.skillEffectId;
+      }
+    }
+    const damageOwner = this.updateEntity(owner, {}, time);
+    const damageTarget = this.updateEntity(
+      target,
+      {
+        currentHp: damageData.targetCurHp,
+        maxHp: damageData.targetMaxHp
+      },
+      time
+    );
+    if (!damageOwner || !damageTarget)
+      return;
+    if (!damageTarget.isPlayer && damageData.targetCurHp < 0) {
+      damageData.damage = damageData.damage + damageData.targetCurHp;
+    }
+    let skillId = damageData.skillId;
+    if (damageData.skillId === 0 && damageData.skillEffectId !== 0) {
+      skillId = damageData.skillEffectId;
+    }
+    let skill = damageOwner.skills.get(skillId);
+    if (!skill) {
+      skill = {
+        ...this.createEntitySkill(),
+        ...{
+          id: skillId
+        },
+        ...this.getSkillNameIcon(damageData.skillId, damageData.skillEffectId)
+      };
+      damageOwner.skills.set(skillId, skill);
+    }
+    const hitFlag = damageData.modifier & 15;
+    const hitOption = (damageData.modifier >> 4 & 7) - 1;
+    const isCrit = (hitFlag & (1 /* critical */ | 8 /* dot_critical */)) !== 0;
+    const mappedSeOnSource = /* @__PURE__ */ new Set();
+    const mappedSeOnTarget = /* @__PURE__ */ new Set();
+    statusEffectsOnSource.forEach(([buffId]) => {
+      mappedSeOnSource.add(buffId);
+    });
+    statusEffectsOnTarget.forEach(([buffId]) => {
+      mappedSeOnTarget.add(buffId);
+    });
+    skill.damageInfo.damageDealt += damageData.damage;
+    if (damageData.damage > skill.maxDamage)
+      skill.maxDamage = damageData.damage;
+    damageOwner.hits.total += 1;
+    skill.hits.total += 1;
+    damageOwner.damageInfo.damageDealt += damageData.damage;
+    damageTarget.damageTaken += damageData.damage;
+    const critCount = isCrit ? 1 : 0;
+    damageOwner.hits.crit += critCount;
+    skill.hits.crit += critCount;
+    let isFrontAttack = false, isBackAttack = false;
+    const directionalmask = this.#data.getSkillEffectDirectionalMask(damageData.skillEffectId) - 1;
+    if (directionalmask === 0 /* back_attack */ || directionalmask === 2 /* flank_attack */) {
+      isBackAttack = hitOption === 0 /* back_attack */;
+      const backAttackCount = isBackAttack ? 1 : 0;
+      damageOwner.hits.backAttack += backAttackCount;
+      damageOwner.hits.totalBackAttack += 1;
+      skill.hits.backAttack += backAttackCount;
+      skill.hits.totalBackAttack += 1;
+    }
+    if (directionalmask === 1 /* frontal_attack */ || directionalmask === 2 /* flank_attack */) {
+      isFrontAttack = hitOption === 1 /* frontal_attack */;
+      const frontAttackCount = isFrontAttack ? 1 : 0;
+      damageOwner.hits.frontAttack += frontAttackCount;
+      damageOwner.hits.totalFrontAttack += 1;
+      skill.hits.frontAttack += frontAttackCount;
+      skill.hits.totalFrontAttack += 1;
+    }
+    if (damageOwner.isPlayer) {
+      this.#game.damageStatistics.totalDamageDealt += damageData.damage;
+      this.#game.damageStatistics.topDamageDealt = Math.max(
+        this.#game.damageStatistics.topDamageDealt,
+        damageOwner.damageInfo.damageDealt
+      );
+      let isBuffedBySupport = false, isDebuffedBySupport = false;
+      mappedSeOnSource.forEach((buffId) => {
+        if (!this.#game.damageStatistics.buffs.has(buffId)) {
+          const statusEffect2 = this.#data.getStatusEffectHeaderData(buffId);
+          if (statusEffect2)
+            this.#game.damageStatistics.buffs.set(buffId, statusEffect2);
+        }
+        const statusEffect = this.#game.damageStatistics.buffs.get(buffId);
+        if (statusEffect && !isBuffedBySupport) {
+          isBuffedBySupport = (statusEffect.buffcategory === "classskill" || statusEffect.buffcategory === "identity" || statusEffect.buffcategory === "ability") && statusEffect.source.skill !== void 0 && statusEffect.target === 1 /* PARTY */ && this.#data.isSupportClassId(statusEffect.source.skill.classid);
+        }
+        const oldval = skill.damageDealtBuffedBy.get(buffId) ?? 0;
+        skill.damageDealtBuffedBy.set(buffId, oldval + damageData.damage);
+        const oldOwnerDamage = damageOwner.damageDealtBuffedBy.get(buffId) ?? 0;
+        damageOwner.damageDealtBuffedBy.set(buffId, oldOwnerDamage + damageData.damage);
+        const oldHitAmountTotal = damageOwner.hits.hitsBuffedBy.get(buffId) ?? 0;
+        damageOwner.hits.hitsBuffedBy.set(buffId, oldHitAmountTotal + 1);
+        const oldHitAmountSkill = skill.hits.hitsBuffedBy.get(buffId) ?? 0;
+        skill.hits.hitsBuffedBy.set(buffId, oldHitAmountSkill + 1);
+      });
+      mappedSeOnTarget.forEach((buffId) => {
+        if (!this.#game.damageStatistics.debuffs.has(buffId)) {
+          const statusEffect2 = this.#data.getStatusEffectHeaderData(buffId);
+          if (statusEffect2)
+            this.#game.damageStatistics.debuffs.set(buffId, statusEffect2);
+        }
+        const statusEffect = this.#game.damageStatistics.debuffs.get(buffId);
+        if (statusEffect && !isDebuffedBySupport) {
+          isDebuffedBySupport = (statusEffect.buffcategory === "classskill" || statusEffect.buffcategory === "identity" || statusEffect.buffcategory === "ability") && statusEffect.source.skill !== void 0 && statusEffect.target === 1 /* PARTY */ && this.#data.isSupportClassId(statusEffect.source.skill.classid);
+        }
+        const oldSkillDmg = skill.damageDealtDebuffedBy.get(buffId) ?? 0;
+        skill.damageDealtDebuffedBy.set(buffId, oldSkillDmg + damageData.damage);
+        const oldOwnerDamage = damageOwner.damageDealtDebuffedBy.get(buffId) ?? 0;
+        damageOwner.damageDealtDebuffedBy.set(buffId, oldOwnerDamage + damageData.damage);
+        const oldHitAmountTotal = damageOwner.hits.hitsDebuffedBy.get(buffId) ?? 0;
+        damageOwner.hits.hitsDebuffedBy.set(buffId, oldHitAmountTotal + 1);
+        const oldHitAmountSkill = skill.hits.hitsDebuffedBy.get(buffId) ?? 0;
+        skill.hits.hitsDebuffedBy.set(buffId, oldHitAmountSkill + 1);
+      });
+      const debuffAttackCount = isDebuffedBySupport ? 1 : 0;
+      const buffAttackCount = isBuffedBySupport ? 1 : 0;
+      skill.damageInfo.damageDealtBuffedBySupport += isBuffedBySupport ? damageData.damage : 0;
+      skill.damageInfo.damageDealtDebuffedBySupport += isDebuffedBySupport ? damageData.damage : 0;
+      damageOwner.damageInfo.damageDealtBuffedBySupport += isBuffedBySupport ? damageData.damage : 0;
+      damageOwner.damageInfo.damageDealtDebuffedBySupport += isDebuffedBySupport ? damageData.damage : 0;
+      damageOwner.hits.hitsBuffedBySupport += buffAttackCount;
+      damageOwner.hits.hitsDebuffedBySupport += debuffAttackCount;
+      skill.hits.hitsBuffedBySupport += buffAttackCount;
+      skill.hits.hitsDebuffedBySupport += debuffAttackCount;
+      if (damageData.damage > 0 && damageOwner.isPlayer) {
+        const rdpsData = {
+          multDmg: {
+            sumRate: 0,
+            totalRate: 1,
+            values: Array()
+          },
+          atkPowSubRate2: {
+            //Contains self, as it's additive
+            selfSumRate: 0,
+            sumRate: 0,
+            values: Array()
+          },
+          atkPowSubRate1: {
+            sumRate: 0,
+            totalRate: 1,
+            values: Array()
+          },
+          skillDamRate: {
+            //Contains self, as it's additive
+            selfSumRate: 0,
+            sumRate: 0,
+            values: Array()
+          },
+          atkPowAmplify: {
+            //Keep the highest
+            values: Array()
+          },
+          crit: {
+            //Contains self, as it's additive
+            selfSumRate: 0,
+            sumRate: 0,
+            values: Array()
+          },
+          critDmgRate: 2
+        };
+        statusEffectsOnSource.forEach(([buffId, sourceEntityId, stackCount]) => {
+          const casterEntity = this.#entityTracker.entities.get(sourceEntityId);
+          if (!casterEntity)
+            return;
+          const buff = this.getBuffAfterTripods(this.#data.skillBuff.get(buffId), casterEntity, damageData);
+          if (!buff)
+            return;
+          if (buff.type === "skill_damage_amplify" && buff.statuseffectvalues && casterEntity.entityType === 1 /* Player */ && sourceEntityId !== owner.entityId) {
+            const skillId2 = buff.statuseffectvalues[0] ?? 0;
+            const skillEffectId = buff.statuseffectvalues[4] ?? 0;
+            if ((skillId2 === 0 || skillId2 === damageData.skillId) && (skillEffectId === 0 || skillEffectId === damageData.skillEffectId)) {
+              const val = buff.statuseffectvalues[1] ?? 0;
+              if (val !== 0) {
+                const rate = val / 1e4 * stackCount;
+                rdpsData.multDmg.values.push({
+                  casterEntity,
+                  rate
+                });
+                rdpsData.multDmg.sumRate += rate;
+                rdpsData.multDmg.totalRate *= 1 + rate;
+              }
+            }
+          } else if (buff.type === "attack_power_amplify" && buff.statuseffectvalues && casterEntity.entityType === 1 /* Player */ && sourceEntityId !== owner.entityId) {
+            const val = buff.statuseffectvalues[0] ?? 0;
+            if (val !== 0) {
+              let rate = val / 1e4 * stackCount;
+              const casterBaseAtkPower = this.#statApi.getStats(casterEntity.name)?.find((s) => s.id === 4 /* ATKPOWER */)?.value;
+              const targetBaseAtkPower = this.#statApi.getStats(owner.name)?.find((s) => s.id === 4 /* ATKPOWER */)?.value;
+              if (casterBaseAtkPower && targetBaseAtkPower) {
+                rate *= casterBaseAtkPower / targetBaseAtkPower;
+              }
+              rdpsData.atkPowAmplify.values.push({
+                casterEntity,
+                rate
+              });
+            }
+          }
+          buff.passiveoption.forEach((passive) => {
+            if (addontype[passive.type] === 2 /* stat */) {
+              if (passive.keystat === "attack_power_sub_rate_2") {
+                const val = passive.value;
+                if (val !== 0) {
+                  let rate = val / 1e4 * stackCount;
+                  if (casterEntity.entityType === 1 /* Player */ && sourceEntityId !== owner.entityId) {
+                    rdpsData.atkPowSubRate2.values.push({
+                      casterEntity,
+                      rate
+                    });
+                    rdpsData.atkPowSubRate2.sumRate += rate;
+                  } else {
+                    rdpsData.atkPowSubRate2.selfSumRate += rate;
+                  }
+                }
+              } else if (passive.keystat === "attack_power_sub_rate_1") {
+                const val = passive.value;
+                if (val !== 0) {
+                  let rate = val / 1e4 * stackCount;
+                  if (casterEntity.entityType === 1 /* Player */ && sourceEntityId !== owner.entityId) {
+                    rdpsData.atkPowSubRate1.values.push({
+                      casterEntity,
+                      rate
+                    });
+                    rdpsData.atkPowSubRate1.sumRate += rate;
+                    rdpsData.atkPowSubRate1.totalRate *= 1 + rate;
+                  }
+                }
+              } else if (passive.keystat === "skill_damage_rate") {
+                const val = passive.value;
+                if (val !== 0) {
+                  const rate = val / 1e4 * stackCount;
+                  if (casterEntity.entityType === 1 /* Player */ && sourceEntityId !== owner.entityId) {
+                    rdpsData.skillDamRate.values.push({
+                      casterEntity,
+                      rate
+                    });
+                    rdpsData.skillDamRate.sumRate += rate;
+                  } else {
+                    rdpsData.skillDamRate.selfSumRate += rate;
+                  }
+                }
+              }
+            }
+            if (passive.keystat === "critical_hit_rate") {
+              const val = passive.value;
+              if (val !== 0) {
+                const rate = val / 1e4 * stackCount;
+                if (casterEntity.entityType === 1 /* Player */ && sourceEntityId !== owner.entityId) {
+                  rdpsData.crit.values.push({
+                    casterEntity,
+                    rate
+                  });
+                  rdpsData.crit.sumRate += rate;
+                } else {
+                  rdpsData.crit.selfSumRate += rate;
+                }
+              }
+            }
+            if (casterEntity.entityType === 1 /* Player */ && sourceEntityId !== owner.entityId) {
+              if (passive.keystat === "skill_damage_sub_rate_2") {
+                const val = passive.value;
+                if (val !== 0) {
+                  let rate = val / 1e4 * stackCount;
+                  const spec = this.#statApi.getStats(casterEntity.name)?.find((s) => s.id === 1 /* SPEC */)?.value ?? 0;
+                  switch (casterEntity.class) {
+                    case 204 /* bard */:
+                      rate *= 1 + spec / 0.0699 * 0.35 / 1e4;
+                      break;
+                    case 105 /* holyknight */:
+                      rate *= 1 + spec / 0.0699 * 0.63 / 1e4;
+                      break;
+                    case 602 /* yinyangshi */:
+                      rate *= 1 + spec / 0.0699 * 0.38 / 1e4;
+                      break;
+                    default:
+                      break;
+                  }
+                  rdpsData.multDmg.values.push({
+                    casterEntity,
+                    rate
+                  });
+                  rdpsData.multDmg.sumRate += rate;
+                  rdpsData.multDmg.totalRate *= 1 + rate;
+                }
+              } else {
+                if (passive.keystat === "critical_dam_rate" && buff.category === "buff") {
+                  rdpsData.critDmgRate += passive.value / 1e4 * stackCount;
+                }
+              }
+            } else if (addontype[passive.type] === 4 /* combat_effect */) {
+              const ce = this.#data.combatEffect.get(passive.keyindex);
+              rdpsData.critDmgRate += stackCount * this.getCritMultiplierFromCombatEffect(ce, {
+                self: owner,
+                target,
+                caster: casterEntity,
+                skill: this.#data.skill.get(skillId),
+                hitOption,
+                targetCount
+              });
+            }
+          });
+        });
+        statusEffectsOnTarget.forEach(([debuffId, sourceEntityId, stackCount]) => {
+          const casterEntity = this.#entityTracker.entities.get(sourceEntityId);
+          if (!casterEntity)
+            return;
+          const debuff = this.getBuffAfterTripods(this.#data.skillBuff.get(debuffId), casterEntity, damageData);
+          if (!debuff)
+            return;
+          if (debuff.type === "instant_stat_amplify" && debuff.statuseffectvalues) {
+            const val = debuff.statuseffectvalues[0] ?? 0;
+            if (val !== 0) {
+              const rate = val / 1e4 * stackCount;
+              if (casterEntity.entityType === 1 /* Player */ && sourceEntityId !== owner.entityId) {
+                rdpsData.crit.values.push({
+                  casterEntity,
+                  rate
+                });
+                rdpsData.crit.sumRate += rate;
+              } else {
+                rdpsData.crit.selfSumRate += rate;
+              }
+            }
+          }
+          if (casterEntity.entityType !== 1 /* Player */ || sourceEntityId === owner.entityId)
+            return;
+          if (debuff.type === "instant_stat_amplify" && debuff.statuseffectvalues) {
+            const val = debuff.statuseffectvalues[0] ?? 0;
+            if (damageData.damageType === 0 /* physics */) {
+              const val2 = debuff.statuseffectvalues[2] ?? 0;
+              if (val2 !== 0) {
+                const rate = -(val2 / 1e4) * stackCount * 0.5;
+                rdpsData.multDmg.values.push({
+                  casterEntity,
+                  rate
+                });
+                rdpsData.multDmg.sumRate += rate;
+                rdpsData.multDmg.totalRate *= 1 + rate;
+              }
+              const val22 = debuff.statuseffectvalues[7] ?? 0;
+              if (val22 !== 0) {
+                const rate = val22 / 1e4 * stackCount;
+                rdpsData.multDmg.values.push({
+                  casterEntity,
+                  rate
+                });
+                rdpsData.multDmg.sumRate += rate;
+                rdpsData.multDmg.totalRate *= 1 + rate;
+              }
+              if (isCrit) {
+                const val3 = debuff.statuseffectvalues[9] ?? 0;
+                if (val3 !== 0) {
+                  const rate = val3 / 1e4 * stackCount;
+                  rdpsData.multDmg.values.push({
+                    casterEntity,
+                    rate
+                  });
+                  rdpsData.multDmg.sumRate += rate;
+                  rdpsData.multDmg.totalRate *= 1 + rate;
+                }
+              }
+            } else if (damageData.damageType === 1 /* magic */) {
+              const val2 = debuff.statuseffectvalues[3] ?? 0;
+              if (val2 !== 0) {
+                const rate = -(val2 / 1e4) * stackCount * 0.5;
+                rdpsData.multDmg.values.push({
+                  casterEntity,
+                  rate
+                });
+                rdpsData.multDmg.sumRate += rate;
+                rdpsData.multDmg.totalRate *= 1 + rate;
+              }
+              const val22 = debuff.statuseffectvalues[8] ?? 0;
+              if (val22 !== 0) {
+                const rate = val22 / 1e4 * stackCount;
+                rdpsData.multDmg.values.push({
+                  casterEntity,
+                  rate
+                });
+                rdpsData.multDmg.sumRate += rate;
+                rdpsData.multDmg.totalRate *= 1 + rate;
+              }
+              if (isCrit) {
+                const val3 = debuff.statuseffectvalues[10] ?? 0;
+                if (val3 !== 0) {
+                  const rate = val3 / 1e4 * stackCount;
+                  rdpsData.multDmg.values.push({
+                    casterEntity,
+                    rate
+                  });
+                  rdpsData.multDmg.sumRate += rate;
+                  rdpsData.multDmg.totalRate *= 1 + rate;
+                }
+              }
+            }
+          }
+          if (debuff.type === "skill_damage_amplify" && debuff.statuseffectvalues) {
+            const skillId2 = debuff.statuseffectvalues[0] ?? 0;
+            const skillEffectId = debuff.statuseffectvalues[4] ?? 0;
+            if ((skillId2 === 0 || skillId2 === damageData.skillId) && (skillEffectId === 0 || skillEffectId === damageData.skillEffectId)) {
+              const val = debuff.statuseffectvalues[1] ?? 0;
+              if (val !== 0) {
+                const rate = val / 1e4 * stackCount;
+                rdpsData.multDmg.values.push({
+                  casterEntity,
+                  rate
+                });
+                rdpsData.multDmg.sumRate += rate;
+                rdpsData.multDmg.totalRate *= 1 + rate;
+              }
+            }
+          }
+          if (debuff.type === "directional_attack_amplify" && debuff.statuseffectvalues) {
+            if (isFrontAttack) {
+              const frontRate = debuff.statuseffectvalues[0] ?? 0;
+              if (frontRate !== 0) {
+                const rate = frontRate / 100 * stackCount;
+                rdpsData.multDmg.values.push({
+                  casterEntity,
+                  rate
+                });
+                rdpsData.multDmg.sumRate += rate;
+                rdpsData.multDmg.totalRate *= 1 + rate;
+              }
+            }
+            if (isBackAttack) {
+              const backRate = debuff.statuseffectvalues[4] ?? 0;
+              if (backRate !== 0) {
+                const rate = backRate / 100 * stackCount;
+                rdpsData.multDmg.values.push({
+                  casterEntity,
+                  rate
+                });
+                rdpsData.multDmg.sumRate += rate;
+                rdpsData.multDmg.totalRate *= 1 + rate;
+              }
+            }
+          }
+        });
+        if (rdpsData.crit.values.length > 0) {
+          const skillCastedData = this.#data.skill.get(damageData.skillId);
+          owner.itemSet?.forEach((option) => {
+            if (addontype[option.type] === 2 /* stat */ && stattype[option.keystat] === 76 /* critical_dam_rate */) {
+              rdpsData.critDmgRate += option.value / 1e4;
+            } else if (addontype[option.type] === 4 /* combat_effect */) {
+              const ce = this.#data.combatEffect.get(option.keyindex);
+              rdpsData.critDmgRate += this.getCritMultiplierFromCombatEffect(ce, {
+                self: owner,
+                target,
+                caster: owner,
+                skill: skillCastedData,
+                hitOption,
+                targetCount
+              });
+            }
+            owner.skills.get(damageData.skillId)?.tripods.forEach((tripodData) => {
+              const combatEffects = /* @__PURE__ */ new Map();
+              tripodData.options.forEach((option2) => {
+                const featureType = skillfeaturetype[option2.type];
+                if (featureType === 45 /* add_chain_combat_effect */) {
+                  if ((option2.params[0] ?? 0) === 0 || damageData.skillEffectId === (option2.params[0] ?? 0)) {
+                    const ceId = option2.params[1];
+                    if (ceId) {
+                      const ce = this.#data.combatEffect.get(ceId);
+                      if (ce)
+                        combatEffects.set(ce.id, ce);
+                    }
+                  }
+                } else if (featureType === 46 /* remove_chain_combat_effect */) {
+                  combatEffects.delete(option2.params[0] ?? 0);
+                } else if (featureType === 104 /* change_combat_effect_arg */) {
+                  if ((option2.params[0] ?? 0) === 0 || damageData.skillEffectId === (option2.params[0] ?? 0)) {
+                    const ce = combatEffects.get(option2.params[1] ?? 0);
+                    if (ce) {
+                      const newCe = structuredClone(ce);
+                      combatEffects.set(ce.id, newCe);
+                      newCe.effects.forEach((effect) => {
+                        effect.actions.forEach((action) => {
+                          for (let i = 0; i < option2.params.length - 2; i++) {
+                            if (paramtype[option2.paramtype] === 1 /* relative */)
+                              action.args[i] *= 1 + (option2.params[i + 2] ?? 0) / 100;
+                            else
+                              action.args[i] += option2.params[i + 2] ?? 0;
+                          }
+                        });
+                      });
+                    }
+                  }
+                } else if (featureType === 29 /* change_dam_critical */) {
+                  if ((option2.params[0] ?? 0) === 0 || damageData.skillEffectId === (option2.params[0] ?? 0)) {
+                    rdpsData.critDmgRate += (option2.params[1] ?? 0) / 1e4;
+                  }
+                } else if (featureType === 30 /* change_dam_critical_rate */) {
+                  if ((option2.params[0] ?? 0) === 0 || damageData.skillEffectId === (option2.params[0] ?? 0)) {
+                    rdpsData.crit.selfSumRate += (option2.params[1] ?? 0) / 1e4;
+                  }
+                }
+              });
+              combatEffects.forEach((ce) => {
+                rdpsData.critDmgRate += this.getCritMultiplierFromCombatEffect(ce, {
+                  self: owner,
+                  target,
+                  caster: owner,
+                  skill: skillCastedData,
+                  hitOption,
+                  targetCount
+                });
+              });
+            });
+          });
+        }
+        if (rdpsData.skillDamRate.values.length > 0) {
+          const targetWeaponSkillDmg = this.#statApi.getStats(owner.name)?.find((s) => s.id === 5 /* SKILLDMG */)?.value;
+          if (targetWeaponSkillDmg)
+            rdpsData.skillDamRate.selfSumRate += targetWeaponSkillDmg / 1e4;
+        }
+        let critSumEffGainRate = 0;
+        if (rdpsData.crit.values.length > 0) {
+          rdpsData.crit.selfSumRate += (this.#statApi.getStats(owner.name)?.find((s) => s.id === 0 /* CRIT */)?.value ?? 0) / 0.2794 / 1e4;
+          const cappedSumRate = Math.min(Math.max(0, 1 - rdpsData.crit.selfSumRate), rdpsData.crit.sumRate);
+          critSumEffGainRate = (cappedSumRate * rdpsData.critDmgRate - cappedSumRate) / (rdpsData.crit.selfSumRate * rdpsData.critDmgRate - rdpsData.crit.selfSumRate + 1);
+        }
+        const attack_power_amplify = rdpsData.atkPowAmplify.values.length <= 0 ? { rate: 0 } : rdpsData.atkPowAmplify.values.reduce((prev, curr) => {
+          return prev.rate > curr.rate ? prev : curr;
+        });
+        const totalEffGainRate = (1 + critSumEffGainRate) * (1 + rdpsData.atkPowSubRate2.sumRate / (1 + rdpsData.atkPowSubRate2.selfSumRate)) * (1 + rdpsData.skillDamRate.sumRate / (1 + rdpsData.skillDamRate.selfSumRate)) * (1 + attack_power_amplify.rate) * rdpsData.multDmg.totalRate * rdpsData.atkPowSubRate1.totalRate - 1;
+        const totalSumGainRate = critSumEffGainRate + rdpsData.atkPowSubRate2.sumRate / (1 + rdpsData.atkPowSubRate2.selfSumRate) + rdpsData.skillDamRate.sumRate / (1 + rdpsData.skillDamRate.selfSumRate) + attack_power_amplify.rate + (rdpsData.multDmg.totalRate - 1) + (rdpsData.atkPowSubRate1.totalRate - 1);
+        {
+          const unitRate = totalEffGainRate * damageData.damage / (totalSumGainRate * (1 + totalEffGainRate));
+          const critGainUnit = critSumEffGainRate * unitRate / rdpsData.crit.sumRate;
+          rdpsData.crit.values.forEach((crit) => {
+            const delta = crit.rate * critGainUnit;
+            const sourceEntityState = this.#game.entities.get(crit.casterEntity.name);
+            this.applyRdps(damageOwner, sourceEntityState, skill, delta);
+          });
+          rdpsData.atkPowSubRate2.values.forEach((dmg) => {
+            const delta = dmg.rate / (1 + rdpsData.atkPowSubRate2.selfSumRate) * unitRate;
+            const sourceEntityState = this.#game.entities.get(dmg.casterEntity.name);
+            this.applyRdps(damageOwner, sourceEntityState, skill, delta);
+          });
+          rdpsData.skillDamRate.values.forEach((dmg) => {
+            const delta = dmg.rate / (1 + rdpsData.skillDamRate.selfSumRate) * unitRate;
+            const sourceEntityState = this.#game.entities.get(dmg.casterEntity.name);
+            this.applyRdps(damageOwner, sourceEntityState, skill, delta);
+          });
+          const multGainUnit = (rdpsData.multDmg.totalRate - 1) * unitRate / rdpsData.multDmg.sumRate;
+          rdpsData.multDmg.values.forEach((dmg) => {
+            const delta = dmg.rate * multGainUnit;
+            const sourceEntityState = this.#game.entities.get(dmg.casterEntity.name);
+            this.applyRdps(damageOwner, sourceEntityState, skill, delta);
+          });
+          const atkPowSubRate1GainUnit = (rdpsData.atkPowSubRate1.totalRate - 1) * unitRate / rdpsData.atkPowSubRate1.sumRate;
+          rdpsData.atkPowSubRate1.values.forEach((dmg) => {
+            const delta = dmg.rate * atkPowSubRate1GainUnit;
+            const sourceEntityState = this.#game.entities.get(dmg.casterEntity.name);
+            this.applyRdps(damageOwner, sourceEntityState, skill, delta);
+          });
+          if (attack_power_amplify.rate > 0) {
+            const delta = attack_power_amplify.rate * unitRate;
+            const sourceEntityState = this.#game.entities.get(attack_power_amplify.casterEntity?.name);
+            this.applyRdps(damageOwner, sourceEntityState, skill, delta);
+          }
+        }
+      }
+      const breakdown = {
+        timestamp: +time,
+        damage: damageData.damage,
+        targetEntity: damageTarget.id,
+        isCrit,
+        isBackAttack,
+        isFrontAttack,
+        isBuffedBySupport,
+        isDebuffedBySupport,
+        buffedBy: [...mappedSeOnSource],
+        debuffedBy: [...mappedSeOnTarget]
+      };
+      const breakdownOwner = BigInt("0x" + damageOwner.id);
+      this.addBreakdown(breakdownOwner, skillId, breakdown);
+    }
+    if (damageTarget.isPlayer) {
+      this.#game.damageStatistics.totalDamageTaken += damageData.damage;
+      this.#game.damageStatistics.topDamageTaken = Math.max(
+        this.#game.damageStatistics.topDamageTaken,
+        damageTarget.damageTaken
+      );
+    }
+    if (damageTarget.isBoss) {
+      this.#game.currentBoss = damageTarget;
+    }
+    if (this.#game.fightStartedOn === 0)
+      this.#game.fightStartedOn = +time;
+    this.#game.lastCombatPacket = +time;
+  }
+  getBuffAfterTripods(oBuff, entity, damageData) {
+    if (!oBuff || entity.entityType !== 1 /* Player */)
+      return oBuff;
+    const buff = structuredClone(oBuff);
+    entity.skills.get(damageData.skillId)?.tripods.forEach((tripodData) => {
+      tripodData.options.forEach((tripod) => {
+        const featureType = skillfeaturetype[tripod.type];
+        if (featureType === 19 /* change_buff_stat */) {
+          if ((tripod.params[0] ?? 0) === 0 || damageData.skillEffectId === (tripod.params[0] ?? 0)) {
+            if (buff.id === (tripod.params[1] ?? 0)) {
+              const changeMap = /* @__PURE__ */ new Map();
+              for (let i = 2; i < tripod.params.length; i += 2) {
+                if (tripod.params[i] && tripod.params[i + 1])
+                  changeMap.set(tripod.params[i] ?? 0, tripod.params[i + 1] ?? 0);
+              }
+              buff.passiveoption.forEach((passive) => {
+                const change = changeMap.get(stattype[passive.keystat]);
+                if (addontype[passive.type] === 2 /* stat */ && change) {
+                  if (paramtype[tripod.paramtype] === 0 /* absolute */)
+                    passive.value += change;
+                  else
+                    passive.value *= 1 + change / 100;
+                }
+              });
+            }
+          }
+        } else if (featureType === 42 /* add_buff_stat */) {
+          if ((tripod.params[0] ?? 0) === 0 || damageData.skillEffectId === (tripod.params[0] ?? 0)) {
+            if (buff.id === (tripod.params[1] ?? 0)) {
+              const keystat = stattype[tripod.params[2] ?? 0];
+              const value = tripod.params[3] ?? 0;
+              if (keystat && value !== void 0)
+                buff.passiveoption.push({
+                  type: "stat",
+                  keystat,
+                  keyindex: 0,
+                  value
+                });
+            }
+          }
+        } else if (featureType === 21 /* change_buff_param */) {
+          if (buff.statuseffectvalues && ((tripod.params[0] ?? 0) === 0 || damageData.skillEffectId === (tripod.params[0] ?? 0))) {
+            if (buff.id === (tripod.params[1] ?? 0)) {
+              if ((tripod.params[2] ?? 0) === 0 /* absolute */) {
+                buff.statuseffectvalues = tripod.params.slice(3);
+              } else {
+                const newValues = [];
+                for (let i = 0; i < Math.max(buff.statuseffectvalues.length, tripod.params.length - 3); i++) {
+                  if (tripod.params[i + 3]) {
+                    newValues.push((buff.statuseffectvalues[i] ?? 0) * (1 + (tripod.params[i + 3] ?? 0) / 100));
+                  }
+                }
+                buff.statuseffectvalues = newValues;
+              }
+            }
+          }
+        }
+      });
+    });
+    return buff;
+  }
+  getCritMultiplierFromCombatEffect(ce, ceConditionData) {
+    if (!ce)
+      return 0;
+    let critDmgRate = 0;
+    ce.effects.filter(
+      (effect) => effect.actions.find(
+        (action) => combateffectactiontype[action.type] === 4 /* modify_critical_multiplier */
+      )
+    ).forEach((effect) => {
+      if (this.#data.isCombatEffectConditionsValid({ effect, ...ceConditionData })) {
+        effect.actions.filter(
+          (action) => combateffectactiontype[action.type] === 4 /* modify_critical_multiplier */
+        ).forEach((action) => {
+          critDmgRate += (action.args[0] ?? 0) / 100;
+        });
+      }
+    });
+    return critDmgRate;
+  }
+  applyRdps(damageOwner, sourceEntityState, skill, delta) {
+    if (sourceEntityState) {
+      sourceEntityState.damageInfo.rdpsDamageGiven += delta;
+    }
+    if (sourceEntityState && this.#data.isSupportClassId(sourceEntityState.classId)) {
+      damageOwner.damageInfo.rdpsDamageReceivedSupp += delta;
+      skill.damageInfo.rdpsDamageReceivedSupp += delta;
+    }
+    damageOwner.damageInfo.rdpsDamageReceived += delta;
+    skill.damageInfo.rdpsDamageReceived += delta;
+  }
+  onStartSkill(owner, skillId, time) {
+    const entity = this.updateEntity(
+      owner,
+      {
+        isDead: false
+      },
+      time
+    );
+    if (entity) {
+      entity.hits.casts += 1;
+      let skill = entity.skills.get(skillId);
+      if (!skill) {
+        skill = {
+          ...this.createEntitySkill(),
+          ...{
+            id: skillId
+          },
+          ...this.getSkillNameIcon(skillId, 0)
+        };
+        entity.skills.set(skillId, skill);
+      }
+      skill.hits.casts += 1;
+    }
+  }
+  onShieldUsed(targetEntity, sourceEntity, statusEffectId, shieldAmountRemoved) {
+    if (shieldAmountRemoved < 0) {
+      console.error("Shield change values was negative, shield ammount increased");
+    }
+    if (targetEntity.entityType === 1 /* Player */ && sourceEntity.entityType === 1 /* Player */) {
+      if (!this.#game.damageStatistics.effectiveShieldingBuffs.has(statusEffectId)) {
+        const statusEffect = this.#data.getStatusEffectHeaderData(statusEffectId);
+        if (statusEffect) {
+          this.#game.damageStatistics.effectiveShieldingBuffs.set(statusEffectId, statusEffect);
+        }
+      }
+      const now = /* @__PURE__ */ new Date();
+      const targetEntityState = this.updateEntity(targetEntity, {}, now);
+      const sourceEntityState = this.updateEntity(sourceEntity, {}, now);
+      targetEntityState.damagePreventedByShield += shieldAmountRemoved;
+      const oldDmgPreventedBy = targetEntityState.damagePreventedByShieldBy.get(statusEffectId) ?? 0;
+      targetEntityState.damagePreventedByShieldBy.set(statusEffectId, oldDmgPreventedBy + shieldAmountRemoved);
+      this.#game.damageStatistics.topEffectiveShieldingUsed = Math.max(
+        targetEntityState.damagePreventedByShield,
+        this.#game.damageStatistics.topEffectiveShieldingUsed
+      );
+      sourceEntityState.damagePreventedWithShieldOnOthers += shieldAmountRemoved;
+      const oldDmgPreventedWith = sourceEntityState.damagePreventedWithShieldOnOthersBy.get(statusEffectId) ?? 0;
+      sourceEntityState.damagePreventedWithShieldOnOthersBy.set(
+        statusEffectId,
+        oldDmgPreventedWith + shieldAmountRemoved
+      );
+      this.#game.damageStatistics.topEffectiveShieldingDone = Math.max(
+        sourceEntityState.damagePreventedWithShieldOnOthers,
+        this.#game.damageStatistics.topEffectiveShieldingDone
+      );
+      this.#game.damageStatistics.totalEffectiveShieldingDone += shieldAmountRemoved;
+    }
+  }
+  onShieldApplied(targetEntity, sourceEntity, statusEffectId, amount) {
+    const now = /* @__PURE__ */ new Date();
+    const targetEntityState = this.updateEntity(targetEntity, {}, now);
+    const sourceEntityState = this.updateEntity(sourceEntity, {}, now);
+    if (sourceEntityState.isPlayer && targetEntityState.isPlayer) {
+      if (!this.#game.damageStatistics.appliedShieldingBuffs.has(statusEffectId)) {
+        const statusEffect = this.#data.getStatusEffectHeaderData(statusEffectId);
+        if (statusEffect) {
+          this.#game.damageStatistics.appliedShieldingBuffs.set(statusEffectId, statusEffect);
+        }
+      }
+      targetEntityState.shieldReceived += amount;
+      sourceEntityState.shieldDone += amount;
+      const oldDoneByValue = sourceEntityState.shieldDoneBy.get(statusEffectId) ?? 0;
+      sourceEntityState.shieldDoneBy.set(statusEffectId, oldDoneByValue + amount);
+      const oldReceivedByValue = targetEntityState.shieldReceivedBy.get(statusEffectId) ?? 0;
+      targetEntityState.shieldReceivedBy.set(statusEffectId, oldReceivedByValue + amount);
+      this.#game.damageStatistics.topShieldDone = Math.max(
+        sourceEntityState.shieldDone,
+        this.#game.damageStatistics.topShieldDone
+      );
+      this.#game.damageStatistics.topShieldGotten = Math.max(
+        targetEntityState.shieldReceived,
+        this.#game.damageStatistics.topShieldGotten
+      );
+      this.#game.damageStatistics.totalShieldDone += amount;
+    }
+  }
+  getSkillNameIcon(skillId, skillEffectId) {
+    if (skillId === 0 && skillEffectId === 0) {
+      return { name: "Bleed", icon: "buff_168.png" };
+    } else if (skillId === 0) {
+      const effect = this.#data.skillEffect.get(skillEffectId);
+      if (effect && effect.itemname) {
+        return { name: effect.itemname, icon: effect.icon ?? "" };
+      } else if (effect) {
+        if (effect.sourceskill) {
+          const skill = this.#data.skill.get(effect.sourceskill);
+          if (skill)
+            return { name: skill.name, icon: skill.icon };
+        } else {
+          const skill = this.#data.skill.get(Math.floor(skillEffectId / 10));
+          if (skill)
+            return { name: skill.name, icon: skill.icon };
+        }
+        return { name: effect.comment };
+      } else {
+        return { name: this.#data.getSkillName(skillId) };
+      }
+    } else {
+      let skill = this.#data.skill.get(skillId);
+      if (!skill) {
+        skill = this.#data.skill.get(skillId - skillId % 10);
+        if (!skill)
+          return { name: this.#data.getSkillName(skillId), icon: "" };
+      }
+      if (skill.summonsourceskill) {
+        skill = this.#data.skill.get(skill.summonsourceskill);
+        if (skill) {
+          return { name: skill.name + " (Summon)", icon: skill.icon };
+        } else {
+          return { name: this.#data.getSkillName(skillId), icon: "" };
+        }
+      } else if (skill.sourceskill) {
+        skill = this.#data.skill.get(skill.sourceskill);
+        if (skill) {
+          return { name: skill.name, icon: skill.icon };
+        } else {
+          return { name: this.#data.getSkillName(skillId), icon: "" };
+        }
+      } else {
+        return { name: skill.name, icon: skill.icon };
+      }
+    }
+  }
+  updateEntity(entity, values, time) {
+    const updateTime = { lastUpdate: +time };
+    let entityState = this.#game.entities.get(entity.name);
+    let extraInfo = {};
+    if (!entityState || entity.entityType === 1 /* Player */ && entityState.isPlayer !== true) {
+      if (entity.entityType === 1 /* Player */) {
+        const player = entity;
+        extraInfo = { classId: player.class, gearScore: player.gearLevel, isPlayer: true };
+      } else if (entity.entityType === 2 /* Npc */ || entity.entityType === 3 /* Summon */) {
+        const npc = entity;
+        extraInfo = { npcId: npc.typeId, isBoss: npc.isBoss };
+      } else if (entity.entityType === 4 /* Esther */) {
+        const esther = entity;
+        extraInfo = { npcId: esther.typeId, isBoss: esther.isBoss, isEsther: true, icon: esther.icon };
+      }
+    }
+    if (entityState) {
+      Object.assign(entityState, values, updateTime, extraInfo);
+    } else {
+      entityState = {
+        ...this.createEntity(),
+        ...values,
+        ...updateTime,
+        ...extraInfo,
+        ...{ name: entity.name },
+        ...{ id: entity.entityId.toString(16) }
+      };
+      this.#game.entities.set(entity.name, entityState);
+    }
+    return entityState;
+  }
+  updateOrCreateEntity(entity, entityState, time) {
+    if (!entityState.name || !entityState.id)
+      return;
+    for (const [k, e] of this.#game.entities) {
+      if (entityState.id === e.id) {
+        this.#game.entities.delete(k);
+        this.updateEntity(entity, { ...e, ...entityState }, time);
+        return;
+      }
+    }
+    this.updateEntity(entity, entityState, time);
+  }
+  createEntitySkill() {
+    const newEntitySkill = {
+      id: 0,
+      name: "",
+      icon: "",
+      damageInfo: {
+        damageDealt: 0,
+        rdpsDamageReceived: 0,
+        rdpsDamageReceivedSupp: 0,
+        rdpsDamageGiven: 0,
+        damageDealtDebuffedBySupport: 0,
+        damageDealtBuffedBySupport: 0
+      },
+      maxDamage: 0,
+      hits: {
+        casts: 0,
+        total: 0,
+        crit: 0,
+        backAttack: 0,
+        totalBackAttack: 0,
+        frontAttack: 0,
+        totalFrontAttack: 0,
+        counter: 0,
+        hitsDebuffedBySupport: 0,
+        hitsBuffedBySupport: 0,
+        hitsBuffedBy: /* @__PURE__ */ new Map(),
+        hitsDebuffedBy: /* @__PURE__ */ new Map()
+      },
+      breakdown: [],
+      damageDealtDebuffedBy: /* @__PURE__ */ new Map(),
+      damageDealtBuffedBy: /* @__PURE__ */ new Map()
+    };
+    return newEntitySkill;
+  }
+  createEntity() {
+    const newEntity = {
+      lastUpdate: 0,
+      id: "",
+      npcId: 0,
+      name: "",
+      classId: 0,
+      isBoss: false,
+      isPlayer: false,
+      isDead: false,
+      deaths: 0,
+      deathTime: 0,
+      gearScore: 0,
+      currentHp: 0,
+      maxHp: 0,
+      damageInfo: {
+        damageDealt: 0,
+        rdpsDamageReceived: 0,
+        rdpsDamageReceivedSupp: 0,
+        rdpsDamageGiven: 0,
+        damageDealtDebuffedBySupport: 0,
+        damageDealtBuffedBySupport: 0
+      },
+      healingDone: 0,
+      shieldDone: 0,
+      damageTaken: 0,
+      skills: /* @__PURE__ */ new Map(),
+      hits: {
+        casts: 0,
+        total: 0,
+        crit: 0,
+        backAttack: 0,
+        totalBackAttack: 0,
+        frontAttack: 0,
+        totalFrontAttack: 0,
+        counter: 0,
+        hitsDebuffedBySupport: 0,
+        hitsBuffedBySupport: 0,
+        hitsBuffedBy: /* @__PURE__ */ new Map(),
+        hitsDebuffedBy: /* @__PURE__ */ new Map()
+      },
+      damageDealtDebuffedBy: /* @__PURE__ */ new Map(),
+      damageDealtBuffedBy: /* @__PURE__ */ new Map(),
+      damagePreventedByShieldBy: /* @__PURE__ */ new Map(),
+      damagePreventedWithShieldOnOthersBy: /* @__PURE__ */ new Map(),
+      shieldDoneBy: /* @__PURE__ */ new Map(),
+      shieldReceivedBy: /* @__PURE__ */ new Map(),
+      damagePreventedWithShieldOnOthers: 0,
+      damagePreventedByShield: 0,
+      shieldReceived: 0,
+      statApiValid: false
+    };
+    return newEntity;
+  }
+  getBroadcast() {
+    const clone = { ...this.#game };
+    clone.entities = /* @__PURE__ */ new Map();
+    this.#game.entities.forEach((entity, id) => {
+      if (!entity.isPlayer && !entity.isEsther)
+        return;
+      entity.statApiValid = this.#statApi.isCurrentZoneValid() && this.#statApi.cache.get(entity.name)?.status === 2 /* VALID */;
+      clone.entities.set(id, { ...entity });
+    });
+    clone.localPlayer = this.#entityTracker.localPlayer.name;
+    return clone;
+  }
+  //#region Breakdown Tracker
+  resetBreakdowns() {
+    this.#entityToSkillBreakdown.clear();
+  }
+  /**
+   * Adds a breakdown entry for the given entity if it doesn't exist yet.
+   *
+   * @param entityId
+   * @returns The entry for the given entity.
+   */
+  createBreakdownEntity(entityId) {
+    if (!this.#entityToSkillBreakdown.has(entityId)) {
+      this.#entityToSkillBreakdown.set(entityId, /* @__PURE__ */ new Map());
+    }
+    return this.#entityToSkillBreakdown.get(entityId);
+  }
+  /**
+   * Removes the entry for the given entity.
+   *
+   * @param entityId The ID of the entity to remove the entry for.
+   */
+  removeBreakdownEntry(entityId) {
+    this.#entityToSkillBreakdown.delete(entityId);
+  }
+  /**
+   * Adds a breakdown to the given entity and skill.
+   *
+   * @param entityId The ID of the entity to add the breakdown for.
+   * @param skillId The ID of the skill to add the breakdown for.
+   * @param breakdown The breakdown to add.
+   */
+  addBreakdown(entityId, skillId, breakdown) {
+    const entityBreakdown = this.createBreakdownEntity(entityId);
+    if (!entityBreakdown.has(skillId)) {
+      const skill = new Array(breakdown);
+      entityBreakdown.set(skillId, skill);
+    } else {
+      entityBreakdown.get(skillId).push(breakdown);
+    }
+  }
+  /**
+   * Returns the breakdowns for the given entity and skill, or undefined if none exist.
+   *
+   * @param entityId The ID of the entity to get the breakdowns for.
+   * @param skillId The ID of the skill to get the breakdowns for.
+   * @returns The breakdowns for the given entity and skill, or undefined if none exist.
+   */
+  getBreakdowns(entityId, skillId) {
+    const entityBreakdown = this.#entityToSkillBreakdown.get(entityId);
+    if (!entityBreakdown)
+      return void 0;
+    return entityBreakdown.get(skillId);
+  }
+  /**
+   * Clears the breakdowns for the given entity and skill.
+   *
+   * @param entityId The ID of the entity to clear the breakdowns for.
+   * @param skillId The ID of the skill to clear the breakdowns for.
+   */
+  clearBreakdowns(entityId, skillId) {
+    const entityBreakdown = this.#entityToSkillBreakdown.get(entityId);
+    if (!entityBreakdown)
+      return;
+    entityBreakdown.delete(skillId);
+  }
+  /**
+   * Applies the breakdowns to the given entity states and optionally clears
+   * stored breakdowns afterwards. (Defaults to true)
+   *
+   * @param entityStates The entity states to apply the breakdowns to.
+   * @param reset Whether to clear the stored breakdowns afterwards.
+   */
+  applyBreakdowns(entityStates, reset = true) {
+    entityStates.forEach((entity) => {
+      entity.skills.forEach((skill) => {
+        const id = BigInt("0x" + entity.id);
+        const breakdowns = this.getBreakdowns(id, skill.id);
+        if (breakdowns)
+          skill.breakdown = [...breakdowns];
+      });
+    });
+    if (reset)
+      this.resetBreakdowns();
+  }
+  //#endregion
+  setKillState(state) {
+    this.#game.killState = state;
+  }
+  setZoneLevel(zoneLevel) {
+    this.#game.zoneLevel = zonelevel[zoneLevel];
+  }
+};
+
+// src/logger/partytracker.ts
+var PartyTracker = class {
+  characterIdToPartyId;
+  entityIdToPartyId;
+  raidInstanceToPartyInstances;
+  ownName;
+  characterNameToCharacterId;
+  #pcIdMapper;
+  constructor(pcIdMapper) {
+    this.characterIdToPartyId = /* @__PURE__ */ new Map();
+    this.entityIdToPartyId = /* @__PURE__ */ new Map();
+    this.raidInstanceToPartyInstances = /* @__PURE__ */ new Map();
+    this.characterNameToCharacterId = /* @__PURE__ */ new Map();
+    this.#pcIdMapper = pcIdMapper;
+  }
+  add(raidInstanceId, partyId, characterId = void 0, entityId = void 0, name = void 0) {
+    if (!characterId && !entityId)
+      return;
+    if (characterId && !entityId)
+      entityId = this.#pcIdMapper.getEntityId(characterId);
+    if (entityId && !characterId)
+      characterId = this.#pcIdMapper.getEntityId(entityId);
+    if (characterId)
+      this.characterIdToPartyId.set(characterId, partyId);
+    if (entityId)
+      this.entityIdToPartyId.set(entityId, partyId);
+    if (name && characterId)
+      this.characterNameToCharacterId.set(name, characterId);
+    this.registerPartyId(raidInstanceId, partyId);
+  }
+  completeEntry(characterId, entityId) {
+    const charPartyId = this.getPartyIdFromCharacterId(characterId);
+    const entPartyId = this.getPartyIdFromEntityId(entityId);
+    if (charPartyId && entPartyId)
+      return;
+    if (!charPartyId && entPartyId) {
+      this.characterIdToPartyId.set(characterId, entPartyId);
+    }
+    if (!entPartyId && charPartyId) {
+      this.entityIdToPartyId.set(entityId, charPartyId);
+    }
+  }
+  changeEntityId(oldEntityId, newEntityId) {
+    const partyId = this.getPartyIdFromEntityId(oldEntityId);
+    if (partyId) {
+      this.entityIdToPartyId.delete(oldEntityId);
+      this.entityIdToPartyId.set(newEntityId, partyId);
+    }
+  }
+  setOwnName(name) {
+    this.ownName = name;
+  }
+  remove(partyInstanceId, name) {
+    if (name === this.ownName) {
+      this.removePartyMappings(partyInstanceId);
+      return;
+    }
+    const chracterId = this.characterNameToCharacterId.get(name);
+    this.characterNameToCharacterId.delete(name);
+    if (!chracterId)
+      return;
+    this.characterIdToPartyId.delete(chracterId);
+    const objectId = this.#pcIdMapper.getEntityId(chracterId);
+    if (objectId)
+      this.characterIdToPartyId.delete(objectId);
+  }
+  isCharacterInParty(characterId) {
+    return this.characterIdToPartyId.has(characterId);
+  }
+  isEntityInParty(entityId) {
+    return this.entityIdToPartyId.has(entityId);
+  }
+  getPartyIdFromCharacterId(characterId) {
+    return this.characterIdToPartyId.get(characterId);
+  }
+  getPartyIdFromEntityId(entityId) {
+    return this.entityIdToPartyId.get(entityId);
+  }
+  removePartyMappings(partyInstanceId) {
+    const raidId = this.getRaidInstanceId(partyInstanceId);
+    const partyIds = raidId ? this.raidInstanceToPartyInstances.get(raidId) ?? /* @__PURE__ */ new Set([partyInstanceId]) : /* @__PURE__ */ new Set([partyInstanceId]);
+    for (const [characterId, partyId] of this.characterIdToPartyId) {
+      if (partyIds.has(partyId)) {
+        this.characterIdToPartyId.delete(characterId);
+        for (const [name, charId] of this.characterNameToCharacterId) {
+          if (characterId === charId) {
+            this.characterNameToCharacterId.delete(name);
+            break;
+          }
+        }
+      }
+    }
+    for (const [entityId, partyId] of this.entityIdToPartyId) {
+      if (partyIds.has(partyId))
+        this.entityIdToPartyId.delete(entityId);
+    }
+  }
+  getRaidInstanceId(partyId) {
+    for (const data of this.raidInstanceToPartyInstances) {
+      if (data[1].has(partyId))
+        return data[0];
+    }
+    return void 0;
+  }
+  registerPartyId(raidInstanceId, partyId) {
+    let list = this.raidInstanceToPartyInstances.get(raidInstanceId);
+    if (!list) {
+      list = /* @__PURE__ */ new Set();
+      this.raidInstanceToPartyInstances.set(raidInstanceId, list);
+    }
+    list.add(partyId);
+  }
+  partyInfo(pkt, entities, localPlayer) {
+    const parsed = pkt.parsed;
+    if (!parsed)
+      return;
+    if (parsed.memberDatas.length === 1 && parsed.memberDatas[0]?.name === localPlayer.name) {
+      this.remove(parsed.partyInstanceId, parsed.memberDatas[0].name);
+      return;
+    }
+    this.removePartyMappings(parsed.partyInstanceId);
+    for (const pm of parsed.memberDatas) {
+      if (pm.characterId === localPlayer.characterId) {
+        this.setOwnName(pm.name);
+      }
+      const entityId = this.#pcIdMapper.getEntityId(pm.characterId);
+      if (entityId) {
+        const ent = entities.get(entityId);
+        if (ent && ent.entityType === 1 /* Player */) {
+          if (ent.name !== pm.name) {
+            const p = ent;
+            p.gearLevel = pm.gearLevel;
+            p.name = pm.name;
+            p.class = pm.classId;
+          }
+        }
+      }
+      this.add(parsed.raidInstanceId, parsed.partyInstanceId, pm.characterId, entityId, pm.name);
+    }
+    return;
+  }
+};
+
+// src/logger/pcidmapper.ts
+var PCIdMapper = class {
+  entityToCharacterId;
+  characterToEntityId;
+  constructor() {
+    this.entityToCharacterId = /* @__PURE__ */ new Map();
+    this.characterToEntityId = /* @__PURE__ */ new Map();
+  }
+  addMapping(characterId, entityId) {
+    this.entityToCharacterId.set(entityId, characterId);
+    this.characterToEntityId.set(characterId, entityId);
+  }
+  getCharacterId(entityId) {
+    return this.entityToCharacterId.get(entityId);
+  }
+  getEntityId(characterId) {
+    return this.characterToEntityId.get(characterId);
+  }
+  clear() {
+    this.entityToCharacterId.clear();
+    this.characterToEntityId.clear();
+  }
+};
+
+// src/logger/parser.ts
+var Parser = class extends TypedEmitter2 {
+  #logger;
+  #data;
+  #pcIdMapper;
+  #partyTracker;
+  #statusTracker;
+  #entityTracker;
+  #gameTracker;
+  #statApi;
+  //TODO: refactor
+  #wasWipe;
+  #wasKill;
+  constructor(logger, data, clientId, options) {
+    super();
+    this.#logger = logger;
+    this.#data = data;
+    this.#pcIdMapper = new PCIdMapper();
+    this.#partyTracker = new PartyTracker(this.#pcIdMapper);
+    this.#statusTracker = new StatusTracker(this.#partyTracker, this.#data, options.isLive ?? true);
+    this.#entityTracker = new EntityTracker(this.#pcIdMapper, this.#partyTracker, this.#statusTracker, this.#data);
+    this.#statApi = new StatApi(
+      this.#entityTracker,
+      clientId,
+      isLiveLogger(this.#logger, options.isLive) ? this.#logger : void 0
+    );
+    this.#gameTracker = new GameTracker(this.#entityTracker, this.#statusTracker, this.#statApi, this.#data, options);
+    this.#gameTracker.emit = this.emit.bind(this);
+    this.#wasWipe = false;
+    this.#wasKill = false;
+    if (this.#gameTracker.options.isLive) {
+      setInterval(this.broadcastStateChange.bind(this), 100);
+    }
+    this.#logger.on("APP_StatApi", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      this.#statApi.updatePlayerStats(parsed.players);
+    }).on("AbilityChangeNotify", (pkt) => {
+    }).on("ActiveAbilityNotify", (pkt) => {
+    }).on("AddonSkillFeatureChangeNotify", (pkt) => {
+    }).on("BlockSkillStateNotify", (pkt) => {
+    }).on("CounterAttackNotify", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      const source = this.#entityTracker.entities.get(parsed.sourceId);
+      if (source)
+        this.#gameTracker.onCounterAttack(source, pkt.time);
+    }).on("DeathNotify", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      const target = this.#entityTracker.entities.get(parsed.targetId);
+      if (target)
+        this.#gameTracker.onDeath(target, pkt.time);
+    }).on("EquipChangeNotify", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      const player = this.#entityTracker.entities.get(parsed.objectId);
+      if (!player || player.entityType !== 1 /* Player */)
+        return;
+      player.itemSet = this.#entityTracker.getPlayerSetOptions(parsed.equipItemDataList);
+      const equipList = [];
+      parsed.equipItemDataList.forEach((item) => {
+        if (item.id !== void 0 && item.slot !== void 0)
+          equipList.push({ id: item.id, slot: item.slot });
+      });
+      player.items.equipList = equipList;
+    }).on("EquipLifeToolChangeNotify", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      const player = this.#entityTracker.entities.get(parsed.objectId);
+      if (!player || player.entityType !== 1 /* Player */)
+        return;
+      const lifeToolList = [];
+      parsed.equipLifeToolDataList.forEach((item) => {
+        if (item.id !== void 0 && item.slot !== void 0)
+          lifeToolList.push({ id: item.id, slot: item.slot });
+      });
+      player.items.lifeToolList = lifeToolList;
+    }).on("IdentityStanceChangeNotify", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      const entity = this.#entityTracker.entities.get(parsed.objectId);
+      if (entity && entity.entityType === 1 /* Player */) {
+        entity.stance = parsed.stance;
+      }
+    }).on("IdentityGaugeChangeNotify", (pkt) => {
+    }).on("InitAbility", (pkt) => {
+    }).on("InitEnv", (pkt) => {
+      this.#entityTracker.processInitEnv(pkt);
+      this.#gameTracker.onInitEnv(pkt, pkt.time);
+    }).on("InitLocal", (pkt) => {
+    }).on("InitPC", (pkt) => {
+      const player = this.#entityTracker.processInitPC(pkt);
+      if (player && pkt.parsed) {
+        const statsMap = this.#data.getStatPairMap(pkt.parsed.statPair);
+        this.#gameTracker.updateOrCreateEntity(
+          player,
+          {
+            id: player.entityId.toString(16),
+            name: player.name,
+            classId: player.class,
+            isPlayer: true,
+            gearScore: player.gearLevel,
+            currentHp: Number(statsMap.get(1 /* hp */)) || 0,
+            maxHp: Number(statsMap.get(27 /* max_hp */)) || 0
+          },
+          pkt.time
+        );
+      }
+    }).on("InitItem", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      if ([1 /* equip */, 20 /* account_equip */].includes(parsed.storageType)) {
+        this.#entityTracker.localPlayer.itemSet = this.#entityTracker.getPlayerSetOptions(parsed.itemDataList);
+        const equipList = [];
+        parsed.itemDataList.forEach((item) => {
+          if (item.id !== void 0 && item.slot !== void 0)
+            equipList.push({ id: item.id, slot: item.slot });
+        });
+        this.#entityTracker.localPlayer.items.equipList = equipList;
+      } else if (parsed.storageType === 21 /* life_tool */) {
+        const lifeToolList = [];
+        parsed.itemDataList.forEach((item) => {
+          if (item.id !== void 0 && item.slot !== void 0)
+            lifeToolList.push({ id: item.id, slot: item.slot });
+        });
+        this.#entityTracker.localPlayer.items.lifeToolList = lifeToolList;
+      }
+    }).on("MigrationExecute", (pkt) => {
+      this.#statApi.zoneSyncStatus = 0 /* INVALID */;
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      if (this.#entityTracker.localPlayer.characterId === 0n)
+        this.#entityTracker.localPlayer.characterId = parsed.account_CharacterId1 < parsed.account_CharacterId2 ? parsed.account_CharacterId1 : parsed.account_CharacterId2;
+      this.#statApi.ip = pkt.parsed.serverAddr.split(":")[0];
+    }).on("NewNpc", (pkt) => {
+      const npcEntity = this.#entityTracker.processNewNpc(pkt);
+      if (npcEntity && pkt.parsed) {
+        const statsMap = this.#data.getStatPairMap(pkt.parsed.npcStruct.statPair);
+        this.#gameTracker.updateOrCreateEntity(
+          npcEntity,
+          {
+            id: npcEntity.entityId.toString(16),
+            name: npcEntity.name,
+            npcId: npcEntity.typeId,
+            isPlayer: false,
+            isBoss: npcEntity.isBoss,
+            currentHp: Number(statsMap.get(1 /* hp */)) || 0,
+            maxHp: Number(statsMap.get(27 /* max_hp */)) || 0
+          },
+          pkt.time
+        );
+      }
+    }).on("NewNpcSummon", (pkt) => {
+      const npcEntity = this.#entityTracker.processNewNpcSummon(pkt);
+      if (npcEntity && pkt.parsed) {
+        const statsMap = this.#data.getStatPairMap(pkt.parsed.npcData.statPair);
+        this.#gameTracker.updateOrCreateEntity(
+          npcEntity,
+          {
+            id: npcEntity.entityId.toString(16),
+            name: npcEntity.name,
+            npcId: npcEntity.typeId,
+            isPlayer: false,
+            isBoss: npcEntity.isBoss,
+            currentHp: Number(statsMap.get(1 /* hp */)) || 0,
+            maxHp: Number(statsMap.get(27 /* max_hp */)) || 0
+          },
+          pkt.time
+        );
+      }
+    }).on("NewPC", (pkt) => {
+      const player = this.#entityTracker.processNewPC(pkt);
+      if (player && pkt.parsed) {
+        const statsMap = this.#data.getStatPairMap(pkt.parsed.pcStruct.statPair);
+        this.#gameTracker.updateOrCreateEntity(
+          player,
+          {
+            id: player.entityId.toString(16),
+            name: player.name,
+            classId: player.class,
+            isPlayer: true,
+            gearScore: player.gearLevel,
+            currentHp: Number(statsMap.get(1 /* hp */)) || 0,
+            maxHp: Number(statsMap.get(27 /* max_hp */)) || 0
+          },
+          pkt.time
+        );
+      }
+    }).on("NewProjectile", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      const projectile = {
+        entityId: parsed.projectileInfo.projectileId,
+        entityType: 5 /* Projectile */,
+        name: parsed.projectileInfo.projectileId.toString(16),
+        ownerId: parsed.projectileInfo.ownerId,
+        skillEffectId: parsed.projectileInfo.skillEffect,
+        skillId: parsed.projectileInfo.skillId,
+        stats: /* @__PURE__ */ new Map()
+      };
+      this.#entityTracker.entities.set(projectile.entityId, projectile);
+    }).on("NewTrap", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      const projectile = {
+        entityId: parsed.trapData.objectId,
+        entityType: 5 /* Projectile */,
+        name: parsed.trapData.objectId.toString(16),
+        ownerId: parsed.trapData.ownerId,
+        skillEffectId: parsed.trapData.skillEffect,
+        skillId: parsed.trapData.skillId,
+        stats: /* @__PURE__ */ new Map()
+      };
+      this.#entityTracker.entities.set(projectile.entityId, projectile);
+    }).on("ParalyzationStateNotify", (pkt) => {
+    }).on("PartyInfo", (pkt) => {
+      this.#partyTracker.partyInfo(pkt, this.#entityTracker.entities, this.#entityTracker.localPlayer);
+    }).on("PartyLeaveResult", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      this.#partyTracker.remove(parsed.partyInstanceId, parsed.name);
+    }).on("PartyPassiveStatusEffectAddNotify", (pkt) => {
+    }).on("PartyPassiveStatusEffectRemoveNotify", (pkt) => {
+    }).on("PartyStatusEffectAddNotify", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      for (const effect of parsed.statusEffectDatas) {
+        const sourceId = parsed.playerIdOnRefresh !== 0n ? parsed.playerIdOnRefresh : effect.sourceId;
+        const sourceEnt = this.#entityTracker.getSourceEntity(sourceId);
+        this.#statusTracker.RegisterStatusEffect(
+          this.#statusTracker.buildStatusEffect(
+            effect,
+            parsed.characterId,
+            sourceEnt.entityId,
+            0 /* Party */,
+            pkt.time
+          )
+        );
+      }
+    }).on("PartyStatusEffectRemoveNotify", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      for (const effectId of parsed.statusEffectIds) {
+        const se = this.#statusTracker.RemoveStatusEffect(
+          parsed.characterId,
+          effectId,
+          0 /* Party */,
+          parsed.reason,
+          pkt.time
+        );
+        if (se && se.statusEffectId === 9701) {
+          this.#statApi.syncData();
+        }
+      }
+    }).on("PartyStatusEffectResultNotify", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      this.#partyTracker.add(parsed.raidInstanceId, parsed.partyInstanceId, parsed.characterId);
+    }).on("PassiveStatusEffectAddNotify", (pkt) => {
+    }).on("PassiveStatusEffectRemoveNotify", (pkt) => {
+    }).on("RaidBegin", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      if (this.#data.statQueryFilter.raid.has(parsed.raidId))
+        this.#statApi.zoneSyncStatus |= 16 /* RAID_VALID */;
+      else
+        this.#statApi.zoneSyncStatus |= 8 /* RAID_INVALID */;
+    }).on("ZoneMemberLoadStatusNotify", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      this.#gameTracker.setZoneLevel(parsed.zoneLevel);
+      if (this.#data.statQueryFilter.zone.has(parsed.zoneId) && [0 /* normal */, 1 /* hard */, 5 /* extreme */].includes(parsed.zoneLevel))
+        this.#statApi.zoneSyncStatus |= 4 /* ZONE_VALID */;
+      else
+        this.#statApi.zoneSyncStatus |= 2 /* ZONE_INVALID */;
+    }).on("RaidBossKillNotify", (pkt) => {
+      this.#gameTracker.setKillState(1 /* CLEAR */);
+      this.#gameTracker.onPhaseTransition(1, pkt.time);
+    }).on("RaidResult", (pkt) => {
+      if (pkt.parsed?.raidResult === 1 /* clear */)
+        this.#gameTracker.setKillState(1 /* CLEAR */);
+      this.#gameTracker.onPhaseTransition(0, pkt.time);
+    }).on("RemoveObject", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      for (const upo of parsed.unpublishedObjects)
+        this.#statusTracker.RemoveLocalObject(upo.objectId, pkt.time);
+    }).on("SkillCastNotify", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      let ownerEntity = this.#entityTracker.getSourceEntity(parsed.caster);
+      ownerEntity = this.#entityTracker.guessIsPlayer(ownerEntity, parsed.skillId);
+      this.#gameTracker.onStartSkill(ownerEntity, parsed.skillId, pkt.time);
+    }).on("SkillDamageAbnormalMoveNotify", (pkt) => {
+      const parsedDmg = pkt.parsed;
+      if (!parsedDmg)
+        return;
+      const ownerEntity = this.#entityTracker.getSourceEntity(parsedDmg.sourceId);
+      parsedDmg.skillDamageAbnormalMoveEvents.forEach((event) => {
+        const targetEntity = this.#entityTracker.getOrCreateEntity(event.skillDamageEvent.targetId);
+        const sourceEntity = this.#entityTracker.getOrCreateEntity(parsedDmg.sourceId);
+        targetEntity.stats.set(1 /* hp */, event.skillDamageEvent.curHp);
+        targetEntity.stats.set(27 /* max_hp */, event.skillDamageEvent.maxHp);
+        this.#gameTracker.onDamage(
+          ownerEntity,
+          sourceEntity,
+          targetEntity,
+          {
+            skillId: parsedDmg.skillId,
+            skillEffectId: parsedDmg.skillEffectId,
+            damage: Number(event.skillDamageEvent.damage),
+            modifier: event.skillDamageEvent.modifier,
+            targetCurHp: Number(event.skillDamageEvent.curHp),
+            targetMaxHp: Number(event.skillDamageEvent.maxHp),
+            damageAttr: event.skillDamageEvent.damageAttr ?? 0 /* none */,
+            damageType: event.skillDamageEvent.damageType
+          },
+          parsedDmg.skillDamageAbnormalMoveEvents.length,
+          pkt.time
+        );
+      });
+    }).on("SkillDamageNotify", (pkt) => {
+      const parsedDmg = pkt.parsed;
+      if (!parsedDmg)
+        return;
+      const ownerEntity = this.#entityTracker.getSourceEntity(parsedDmg.sourceId);
+      parsedDmg.skillDamageEvents.forEach((event) => {
+        const targetEntity = this.#entityTracker.getOrCreateEntity(event.targetId);
+        const sourceEntity = this.#entityTracker.getOrCreateEntity(parsedDmg.sourceId);
+        this.#gameTracker.onDamage(
+          ownerEntity,
+          sourceEntity,
+          targetEntity,
+          {
+            skillId: parsedDmg.skillId,
+            skillEffectId: parsedDmg.skillEffectId ?? 0,
+            damage: Number(event.damage),
+            modifier: event.modifier,
+            targetCurHp: Number(event.curHp),
+            targetMaxHp: Number(event.maxHp),
+            damageAttr: event.damageAttr ?? 0 /* none */,
+            damageType: event.damageType
+          },
+          parsedDmg.skillDamageEvents.length,
+          pkt.time
+        );
+      });
+    }).on("SkillStageNotify", (pkt) => {
+    }).on("SkillStartNotify", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      let ownerEntity = this.#entityTracker.getSourceEntity(parsed.sourceId);
+      ownerEntity = this.#entityTracker.guessIsPlayer(ownerEntity, parsed.skillId);
+      if (ownerEntity.entityType === 1 /* Player */) {
+        const player = ownerEntity;
+        let skill = player.skills.get(parsed.skillId);
+        if (!skill) {
+          skill = { effects: /* @__PURE__ */ new Set(), tripods: /* @__PURE__ */ new Map() };
+          player.skills.set(parsed.skillId, skill);
+        }
+        skill.level = parsed.skillLevel;
+        if (parsed.skillOptionData.tripodIndex && parsed.skillOptionData.tripodLevel) {
+          if (!skill.tripods) {
+            skill.tripods = /* @__PURE__ */ new Map();
+          }
+          for (const [idx, tripodRow] of ["first", "second", "third"].entries()) {
+            if (parsed.skillOptionData.tripodIndex[tripodRow] === 0) {
+              for (let num = 1; num <= 3; num++) {
+                skill.tripods.delete(3 * idx + num);
+              }
+              continue;
+            }
+            const tripodIdx = 3 * idx + parsed.skillOptionData.tripodIndex[tripodRow];
+            const tripodLevel = parsed.skillOptionData.tripodLevel[tripodRow];
+            let tripodData = skill.tripods.get(tripodIdx);
+            if (tripodData && tripodLevel === tripodData.level)
+              continue;
+            for (let num = 1; num <= 3; num++) {
+              skill.tripods.delete(3 * idx + num);
+            }
+            const effect = this.#data.skillFeature.get(parsed.skillId)?.get(tripodIdx);
+            let options2 = [];
+            if (effect) {
+              effect.entries.forEach((entry) => {
+                if (entry.level !== 0 && entry.level !== tripodLevel)
+                  return;
+                options2.push(entry);
+              });
+            }
+            skill.tripods.set(tripodIdx, {
+              level: parsed.skillOptionData.tripodLevel[tripodRow],
+              options: options2.sort((a, b) => b.level - a.level)
+            });
+          }
+        }
+      }
+      this.#gameTracker.onStartSkill(ownerEntity, parsed.skillId, pkt.time);
+    }).on("StatusEffectAddNotify", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      const sourceEnt = this.#entityTracker.getSourceEntity(parsed.statusEffectData.sourceId);
+      this.#statusTracker.RegisterStatusEffect(
+        this.#statusTracker.buildStatusEffect(
+          parsed.statusEffectData,
+          parsed.objectId,
+          sourceEnt.entityId,
+          1 /* Local */,
+          pkt.time
+        )
+      );
+    }).on("StatusEffectDurationNotify", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      this.#statusTracker.UpdateDuration(
+        parsed.effectInstanceId,
+        parsed.targetId,
+        parsed.expirationTick,
+        1 /* Local */
+      );
+    }).on("StatusEffectRemoveNotify", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      for (const effectId of parsed.statusEffectIds) {
+        const se = this.#statusTracker.RemoveStatusEffect(
+          parsed.objectId,
+          effectId,
+          1 /* Local */,
+          parsed.reason,
+          pkt.time
+        );
+        if (se && se.statusEffectId === 9701) {
+          this.#statApi.syncData();
+        }
+      }
+    }).on("StatusEffectSyncDataNotify", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      this.#statusTracker.SyncStatusEffect(
+        parsed.effectInstanceId,
+        parsed.characterId,
+        parsed.objectId,
+        parsed.value,
+        this.#entityTracker.localPlayer.characterId
+      );
+    }).on("TriggerBossBattleStatus", (pkt) => {
+      this.#gameTracker.onPhaseTransition(2, pkt.time);
+    }).on("TriggerFinishNotify", (pkt) => {
+    }).on("TriggerStartNotify", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      switch (parsed.triggerSignalType) {
+        case 57 /* dungeon_phase1_clear */:
+        case 59 /* dungeon_phase2_clear */:
+        case 61 /* dungeon_phase3_clear */:
+        case 63 /* dungeon_phase4_clear */:
+        case 74 /* dungeon_phase5_clear */:
+        case 76 /* dungeon_phase6_clear */:
+          this.#gameTracker.setKillState(1 /* CLEAR */);
+          break;
+        case 58 /* dungeon_phase1_fail */:
+        case 60 /* dungeon_phase2_fail */:
+        case 62 /* dungeon_phase3_fail */:
+        case 64 /* dungeon_phase4_fail */:
+        case 75 /* dungeon_phase5_fail */:
+        case 77 /* dungeon_phase6_fail */:
+          this.#gameTracker.setKillState(0 /* FAIL */);
+          break;
+        case 27 /* assembled */:
+        case 10 /* volume_enter */:
+        case 11 /* volume_leave */:
+          this.#statApi.syncData();
+      }
+    }).on("TroopMemberUpdateMinNotify", (pkt) => {
+    }).on("ZoneObjectUnpublishNotify", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      this.#statusTracker.RemoveLocalObject(parsed.objectId, pkt.time);
+    }).on("ZoneStatusEffectAddNotify", (pkt) => {
+    }).on("TroopMemberUpdateMinNotify", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      if (parsed.statusEffectDatas.length > 0) {
+        for (const se of parsed.statusEffectDatas) {
+          const objectId = this.#pcIdMapper.getEntityId(parsed.characterId);
+          const newValCandidate1 = se.value ? se.value.readUInt32LE() : 0;
+          const newValCandidate2 = se.value ? se.value.readUInt32LE(8) : 0;
+          const newVal = newValCandidate1 < newValCandidate2 ? newValCandidate1 : newValCandidate2;
+          this.#statusTracker.SyncStatusEffect(
+            se.effectInstanceId,
+            parsed.characterId,
+            objectId,
+            newVal,
+            this.#entityTracker.localPlayer.characterId
+          );
+        }
+      }
+    }).on("ZoneStatusEffectRemoveNotify", (pkt) => {
+    });
+    this.#statusTracker.on("shieldApplied", (se) => {
+      let targetObjectId = se.targetId;
+      if (se.type === 0 /* Party */) {
+        targetObjectId = this.#pcIdMapper.getEntityId(se.targetId) ?? targetObjectId;
+      }
+      if (targetObjectId === void 0)
+        return;
+      const sourceEntity = this.#entityTracker.getSourceEntity(se.sourceId);
+      const targetEntity = this.#entityTracker.getOrCreateEntity(targetObjectId);
+      this.#gameTracker.onShieldApplied(targetEntity, sourceEntity, se.statusEffectId, se.value);
+    }).on("shieldChanged", (se, oldValue, newVal) => {
+      let targetObjectId = se.targetId;
+      if (se.type === 0 /* Party */) {
+        targetObjectId = this.#pcIdMapper.getEntityId(se.targetId) ?? targetObjectId;
+      }
+      if (targetObjectId === void 0)
+        return;
+      const sourceEntity = this.#entityTracker.getSourceEntity(se.sourceId);
+      const targetEntity = this.#entityTracker.getOrCreateEntity(targetObjectId);
+      this.#gameTracker.onShieldUsed(targetEntity, sourceEntity, se.statusEffectId, oldValue - newVal);
+    });
+  }
+  //TODO: method to change broadcast interval (without restart)
+  broadcastStateChange() {
+    this.emit("state-change", this.#gameTracker.getBroadcast());
+  }
+  reset() {
+    this.#gameTracker.resetState(+/* @__PURE__ */ new Date());
+  }
+  cancelReset() {
+    this.#gameTracker.cancelReset();
+  }
+  updateOptions(options) {
+    this.#gameTracker.updateOptions(options);
+  }
+  onConnect(ip) {
+    if (!this.#statApi.ip) {
+      this.#statApi.ip = ip.split(":")[0];
+      if (isLiveLogger(this.#logger, this.#gameTracker.options.isLive)) {
+        this.#logger.appendLog(
+          new LogEvent(
+            {
+              account_CharacterId1: 0n,
+              serverAddr: ip,
+              account_CharacterId2: 0n
+            },
+            11 /* MigrationExecute */,
+            write
+          )
+        );
+      }
+    }
+  }
+  get encounters() {
+    this.#gameTracker.splitEncounter(/* @__PURE__ */ new Date());
+    return this.#gameTracker.encounters;
+  }
+};
+function isLiveLogger(logger, isLive) {
+  return logger instanceof LiveLogger || logger.appendLog && isLive;
+}
+export {
+  Parser
+};
